@@ -3258,7 +3258,7 @@ video.smartphone_video_player {
 }
 
 
-/* Teamgram Me */
+/* Papercraft Me */
 .tgme_page_wrap {
   font-family: 'Roboto', sans-serif;
   color: var(--text-color);
@@ -4244,7 +4244,7 @@ i.tl_telegram_share_icon {
 }
 
 
-/* Teamgram Desktop */
+/* Papercraft Desktop */
 .td_btn_hidden,
 .td_all_shown .td_show_all_platforms {
   display: none;
@@ -5007,7 +5007,7 @@ i.tl_telegram_share_icon {
   }
 
 
-  /* Teamgram.me */
+  /* Papercraft.me */
   .tgme_page_photo_image {
     width: 110px;
     height: 110px;
