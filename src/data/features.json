@@ -1,0 +1,26 @@
+[
+  {
+    "id": "settings",
+    "img": {
+      "src": "/images/features/{locale}/settings.png",
+      "width": 537,
+      "height": 500
+    }
+  },
+  {
+    "id": "music",
+    "img": {
+      "src": "/images/features/common/music.png",
+      "width": 537,
+      "height": 500
+    }
+  },
+  {
+    "id": "customization",
+    "img": {
+      "src": "/images/features/{locale}/customization.png",
+      "width": 537,
+      "height": 500
+    }
+  }
+]

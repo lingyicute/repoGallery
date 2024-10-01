@@ -1,0 +1,44 @@
+[
+  {
+    "href": "https://immat0x1.t.me",
+    "name": "immat0x1",
+    "roles": ["ceo", "leadDev"],
+    "img": "https://avatars.githubusercontent.com/u/73192010?v=4"
+  },
+  {
+    "href": "https://the8055u.t.me",
+    "name": "8055",
+    "roles": ["leadDesigner"],
+    "img": "https://avatars.githubusercontent.com/u/94839871?v=4"
+  },
+  {
+    "href": "https://marsutko.t.me",
+    "name": "jplie",
+    "roles": ["moe"],
+    "img": "https://avatars.githubusercontent.com/u/61517619?v=4"
+  },
+  {
+    "href": "https://itsv1eds.ru/",
+    "name": "itsv1eds",
+    "roles": ["founder"],
+    "img": "https://avatars.githubusercontent.com/u/83278286?v=4"
+  },
+  {
+    "href": "https://TierOhneNation.t.me",
+    "name": "R4IN80W",
+    "roles": ["designer"],
+    "img": "/images/team/r4in80w.jpg"
+  },
+  {
+    "href": "https://reNightly.t.me",
+    "name": "Nightly",
+    "roles": ["python", "themer"],
+    "img": "https://avatars.githubusercontent.com/u/113241279?v=4"
+  },
+  {
+    "href": "https://undeffine.t.me",
+    "name": "undeffine",
+    "roles": ["python"],
+    "img": "https://avatars.githubusercontent.com/u/45912610?v=4"
+  }
+]
