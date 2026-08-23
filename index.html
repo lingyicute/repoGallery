@@ -12,6 +12,54 @@
 <link rel="preconnect" href="https://github.com" />
 <link rel="preload" href="https://raw.githubusercontent.com/lingyicute/Nebulove/main/Nebulove.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,400..700&family=JetBrains+Mono:wght@400..700&family=Noto+Sans+SC:wght@400..700&display=swap" rel="stylesheet" />
+<style id="critical-loader-style">
+  /* 外部样式表尚未到达时，加载层也必须保持可见且居中 */
+  html, body { margin: 0; }
+  body.page-loading { overflow: hidden; }
+  .page-loader, .page-loader * { box-sizing: border-box; }
+  .page-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483647;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--md-surface, #fdf8ff);
+    opacity: 1;
+    visibility: visible;
+  }
+  .page-loader.is-ready {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .page-loader-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    min-width: 128px;
+    padding: 24px 22px;
+    border: 1px solid var(--md-outline-variant, #cac4d0);
+    border-radius: 28px;
+    background: var(--md-surface-container-high, #ece6f0);
+    color: var(--md-on-surface-variant, #49454f);
+  }
+  .page-loader-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--md-primary-container, #eaddff);
+    border-top-color: var(--md-primary, #6750a4);
+    border-right-color: var(--md-tertiary, #7d5260);
+    border-radius: 50%;
+    animation: critical-page-loader-spin .8s linear infinite;
+  }
+  .page-loader-label {
+    font: 700 12px/1.5 system-ui, -apple-system, sans-serif;
+    letter-spacing: .04em;
+  }
+  @keyframes critical-page-loader-spin { to { transform: rotate(360deg); } }
+</style>
 <link rel="stylesheet" href="./style.css" />
 <title>lingyicute's Open Source Gallery</title>
 </head>
