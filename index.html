@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="preconnect" href="https://github.com" />
-<link rel="preload" href="https://github.com/lingyicute/Nebulove/raw/refs/heads/main/Nebulove.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
+<link rel="preload" href="https://raw.githubusercontent.com/lingyicute/Nebulove/main/Nebulove.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,400..700&family=JetBrains+Mono:wght@400..700&family=Noto+Sans+SC:wght@400..700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="./style.css" />
 <title>lingyicute's Open Source Gallery</title>
@@ -24,12 +24,12 @@
   <div class="wrap topbar-in">
     <a class="brand state" href="#top" aria-label="回到顶部">
       <img id="brandAvatar" src="https://avatars.githubusercontent.com/u/160479206?v=4" alt="lingyicute 的头像" width="36" height="36" />
-      <span class="brand-t"><b>lingyicute's</b><span>Open Sce Gallery</span></span>
+      <span class="brand-t"><b>lingyicute's</b><span>Open Source Gallery</span></span>
     </a>
     <div class="spacer"></div>
     <a class="icon-btn state" href="https://github.com/lingyicute" target="_blank" rel="noopener noreferrer" aria-label="GitHub 主页" id="ghLink"></a>
     <button class="icon-btn state" id="darkBtn" aria-label="切换深浅色"></button>
-    <button class="pill-btn pri-c state lift" data-act="palette"><span id="paletteBtnIcon"></span><span class="txt">动态取色</span></button>
+    <button class="pill-btn pri-c state lift" data-act="palette"><span id="paletteBtnIcon"></span><span class="txt">换个颜色</span></button>
   </div>
 </header>
 
@@ -574,17 +574,16 @@ function renderHero() {
 
   $('#hero').innerHTML =
     '<div class="hero-grid"><div>' +
-    '<div class="rv" style="--d:120ms"><span class="eyebrow sec-c">' + ic('sparkles', 14) + ' GITHUB × MATERIAL YOU 动态取色画廊</span></div>' +
-    '<h1 class="h1 rv" style="--d:0ms"><span style="display:block">' + maskText('lingyicute 的', 280) + '</span>' +
-    '<span style="display:block" class="grad-text">' + maskText('开源小宇宙', 640) + '</span></h1>' +
-    '<p class="lead rv" style="--d:820ms">' + n + ' 个公开仓库正在各自的轨道上运行 —— 从 Material 设计音乐播放器到 Telegram 客户端、构建脚本与小工具,每一颗都是认真打磨的星星。</p>' +
+    '<div class="rv" style="--d:120ms"><span class="eyebrow sec-c">' + ic('sparkles', 14) + 'Made with Love</span></div>' +
+    '<h1 class="h1 rv" style="--d:0ms"><span style="display:block">' + maskText('lingyicute's', 280) + '</span>' +
+    '<span style="display:block" class="grad-text">' + maskText('Open Source Gallery', 640) + '</span></h1>' +
+    '<p class="lead rv" style="--d:820ms">' + n + ' 个公开仓库正在发芽 —— 需要的话，拿去就好。</p>' +
     '<div class="meta-chips rv" style="--d:900ms">' +
-    '<span class="chip-info c-high chip">' + ic('calendar', 14) + ' ' + joinYear(u.created_at) + '加入 GitHub</span>' +
+    '<span class="chip-info c-high chip">2016 年 7 月加入 GitHub</span>' +
     '<span class="chip-info c-high chip">' + ic('book', 14) + ' ' + n + ' 仓库</span>' +
     '<span class="chip-info c-high chip">' + ic('star', 14) + ' ' + STATS.stars + ' Stars</span></div>' +
     '<div class="cta-row rv" style="--d:1000ms">' +
     '<a class="btn pri state lift m3-shadow-1" href="' + u.html_url + '" target="_blank" rel="noopener noreferrer">' + ghIcon(20) + ' 访问 GitHub ' + ic('out', 16) + '</a>' +
-    '<button class="btn sec-c state lift" data-act="extract" id="heroExtract">' + ic('wand', 18) + ' 从头像取色</button>' +
     '<a class="btn btn-txt state lift" href="#repos">浏览仓库 <span class="bob">' + ic('down', 16) + '</span></a>' +
     '</div></div>' +
     '<div class="hero-right"><div class="avatar-wrap pop-avatar"><div class="avatar-ring"></div>' +
@@ -620,7 +619,7 @@ function renderSpotlight() {
   s.innerHTML =
     '<div class="rv"><div class="spot pri-c lift">' +
     '<span class="spot-deco">' + ic('star', 260, true) + '</span><span class="spot-wm mono">01</span>' +
-    '<div style="position:relative"><span class="spot-chip">' + ic('trophy', 14) + ' 社区之星 · 最受欢迎</span>' +
+    '<div style="position:relative"><span class="spot-chip">' + ic('trophy', 14) + ' 最受欢迎（Maybe?）</span>' +
     '<a class="spot-title" href="' + r.html_url + '" target="_blank" rel="noopener noreferrer"><h3>' + esc(r.name) + '<span class="ic">' + ic('out', 24) + '</span></h3></a>' +
     (r.description ? '<p class="spot-desc">' + esc(r.description) + '</p>' : '') +
     '<div class="spot-meta">' +
@@ -788,15 +787,14 @@ function renderPanel() {
     '<div class="panel popover c-high m3-shadow-3" role="dialog" aria-label="动态取色面板">' +
     '<p class="panel-k">MATERIAL YOU</p><h3>动态取色</h3>' +
     '<div class="swatches">' + sw + '</div>' +
-    '<button class="panel-wide sec-c state lift" data-act="extract" id="panelExtract">' + ic('wand', 16) + ' 从头像提取主题色</button>' +
-    '<p class="panel-note">' + ic('image', 14) + '<span>与 Android「壁纸取色」同源:量化头像像素并评分,生成整套色调方案。</span></p></div>';
+    '<button class="panel-wide sec-c state lift" data-act="extract" id="panelExtract">' + ic('wand', 16) + ' 使用我的头像主题色</button>' +
+    '<p class="panel-note">' + ic('image', 14) + '<span>与 Google「Material You」同源的调色方案</span></p></div>';
   $('#scrim').hidden = false;
   $$('[data-seed]', host).forEach(b => b.addEventListener('click', () => {
     seed = b.dataset.seed;
     persistTheme();
     applyThemeAnim(true);
     toast('主题色已更新');
-    /* 只更新选中态,避免面板重播入场动画 */
     $$('[data-seed]', host).forEach(x => {
       const on2 = x.dataset.seed.toLowerCase() === seed.toLowerCase();
       x.classList.toggle('active', on2);
@@ -827,7 +825,7 @@ async function extractAvatar() {
     seed = color;
     persistTheme();
     applyThemeAnim(true);
-    toast('已从头像提取全新主题色');
+    toast('已从头像提取主题色');
   } else {
     toast('头像取色失败,已保留当前主题');
   }
