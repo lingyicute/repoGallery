@@ -201,7 +201,7 @@ html.theme-anim .blob, html.theme-anim .topbar, html.theme-anim .progress, html.
 .spot-deco{position:absolute;top:-40px;right:-32px;opacity:.08;pointer-events:none}
 .spot-wm{position:absolute;right:28px;bottom:16px;font-size:60px;font-weight:700;opacity:.1;pointer-events:none;user-select:none}
 @media(min-width:640px){.spot-wm{font-size:96px}}
-.spot-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 14px;font-size:11px;font-weight:700;background:color-mix(in srgb,currentColor 12%,transparent)}
+.spot-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:700;background:color-mix(in srgb,currentColor 12%,transparent)}
 .spot-title{margin-top:20px;width:fit-content}
 .spot-title h3{font-size:clamp(1.7rem,4.5vw,3rem);line-height:1.15;font-weight:800;letter-spacing:-.02em}
 .spot-title .ic{display:inline-block;vertical-align:baseline;margin-left:8px;transition:translate .3s var(--e)}

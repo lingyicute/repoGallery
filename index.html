@@ -106,8 +106,8 @@
 
 <footer class="footer">
   <div class="f-dots"><span></span><span></span><span></span></div>
-  <p class="f-copy">整站配色由 <b>Material You</b> 动态取色引擎实时生成 —— 原生 HTML / CSS / JavaScript 制作。</p>
-  <p class="f-tag">Crafted with <span class="heart" id="heartIcon"></span> for lingyicute · 2026</p>
+  <p class="f-copy">整站配色由原生 HTML / CSS / JavaScript 制作的 <b>Material You</b> 动态取色引擎实时生成。</p>
+  <p class="f-tag">Crafted with <span class="heart" id="heartIcon"></span> by lingyicute · 2026</p>
 </footer>
 
 <button class="fab-top pri state m3-shadow-2" id="fabTop" aria-label="回到顶部" tabindex="-1"></button>
@@ -788,7 +788,7 @@ function renderPanel() {
     '<p class="panel-k">MATERIAL YOU</p><h3>动态取色</h3>' +
     '<div class="swatches">' + sw + '</div>' +
     '<button class="panel-wide sec-c state lift" data-act="extract" id="panelExtract">' + ic('wand', 16) + ' 使用我的头像主题色</button>' +
-    '<p class="panel-note">' + ic('image', 14) + '<span>与 Google「Material You」同源的调色方案</span></p></div>';
+    '<p class="panel-note">' + ic('image', 14) + '<span>与 Android 壁纸取色同源的调色方案</span></p></div>';
   $('#scrim').hidden = false;
   $$('[data-seed]', host).forEach(b => b.addEventListener('click', () => {
     seed = b.dataset.seed;
