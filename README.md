@@ -1,6 +1,4 @@
 # Open Source Repo Gallery - opensource.92li.uk Source Code
- 
-The personal website of lingyicute.
 
 ![image](https://raw.githubusercontent.com/lingyicute/repoGallery/main/screenshot.webp)
 
