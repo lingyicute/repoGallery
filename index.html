@@ -1,147 +1,985 @@
-<!DOCTYPE html>
-<html>
-
+<!doctype html>
+<html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <title>Papercraft - Made for My Best Xyc～❤️</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta property="og:title" content="Papercraft – Self hosted mtproto messenger">
-  <meta property="og:image" content="/img/t_logo.png">
-  <meta property="og:site_name" content="Papercraft">
-  <meta property="og:description" content="">
-
-  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-  <link href="/css/bootstrap.min.css" rel="stylesheet">
-
-  <link href="/css/teamgram.css" rel="stylesheet" media="screen">
-  <style>
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="lingyicute's Open Source Gallery'" />
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#fdf8ff" />
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#141218" />
+<link rel="icon" href="https://92li.uk/static/img/heartface.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://github.com" />
+<link rel="preload" href="https://github.com/lingyicute/Nebulove/raw/refs/heads/main/Nebulove.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,400..700&family=JetBrains+Mono:wght@400..700&family=Noto+Sans+SC:wght@400..700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="./style.css" />
+<title>lingyicute's Open Source Gallery</title>
 </head>
-
 <body>
-  <div id="fb-root"></div>
-  <div class="tl_page_wrap">
-    <div class="tl_page_head navbar navbar-static-top navbar navbar-tg">
-      <div class="navbar-inner">
-        <div class="container clearfix">
-          <ul class="nav navbar-nav navbar-right">
-            <li class="navbar-twitter"><a href="https://web.teamgram.net/a"><span class="hidden-xs">
-                  Free Trial!</span></a></li>
-          </ul>
-          <ul class="nav navbar-nav">
-            <li class="active"><a href="/">Home</a></li>
-            <li class=""><a href="/faq">FAQ</a></li>
-            <li class=""><a href="/apps">Apps</a></li>
-            <li class="hidden-xs "><a href="https://github.com/teamgram" target="_blank">Github</a></li>
-          </ul>
+
+<div class="blobs" aria-hidden="true"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
+<div class="progress" id="progress"></div>
+
+<header class="topbar" id="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand state" href="#top" aria-label="回到顶部">
+      <img id="brandAvatar" src="https://avatars.githubusercontent.com/u/160479206?v=4" alt="lingyicute 的头像" width="36" height="36" />
+      <span class="brand-t"><b>lingyicute's</b><span>Open Sce Gallery</span></span>
+    </a>
+    <div class="spacer"></div>
+    <a class="icon-btn state" href="https://github.com/lingyicute" target="_blank" rel="noopener noreferrer" aria-label="GitHub 主页" id="ghLink"></a>
+    <button class="icon-btn state" id="darkBtn" aria-label="切换深浅色"></button>
+    <button class="pill-btn pri-c state lift" data-act="palette"><span id="paletteBtnIcon"></span><span class="txt">动态取色</span></button>
+  </div>
+</header>
+
+<main id="top">
+  <!-- Hero(骨架屏先行,数据到达后替换) -->
+  <section class="hero wrap" id="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="sk" style="width:224px;height:32px;border-radius:999px"></div>
+        <div class="sk" style="width:80%;height:60px;border-radius:20px;margin-top:28px"></div>
+        <div class="sk" style="width:58%;height:60px;border-radius:20px;margin-top:14px"></div>
+        <div class="sk" style="width:100%;max-width:520px;height:16px;margin-top:28px"></div>
+        <div class="sk" style="width:66%;height:16px;margin-top:10px"></div>
+        <div style="display:flex;gap:12px;margin-top:36px">
+          <div class="sk" style="width:150px;height:52px;border-radius:999px"></div>
+          <div class="sk" style="width:132px;height:52px;border-radius:999px"></div>
+        </div>
+      </div>
+      <div>
+        <div class="sk avatar-blob" style="width:176px;height:176px;margin:0 auto 32px;border-radius:45%"></div>
+        <div class="tiles">
+          <div class="sk" style="height:132px;border-radius:26px"></div>
+          <div class="sk" style="height:132px;border-radius:26px"></div>
+          <div class="sk" style="height:132px;border-radius:26px"></div>
+          <div class="sk" style="height:132px;border-radius:26px"></div>
         </div>
       </div>
     </div>
-    <div class="container clearfix tl_page_container tl_main_page_container">
-      <div class="tl_page">
-        <div class="tl_main_wrap">
-          <div class="tl_main_head">
-            <div class="tl_main_side_blog">
-              <div class="side_blog_wrap">
-                <a href="#" class="side_blog_header">Recent News</a>
-                <div class="side_blog_entries">
-                </div>
-              </div>
-            </div>
-            <div class="tl_main_logo_wrap">
-              <a href="#" class="tl_main_logo">
-                <img class="tl_main_logo" src="img/t_logo.png" alt="Papercraft logo" />
-                <!--div class="tl_main_logo_title_image"></div-->
-              </a>
-              <h3 class="tl_main_body_header">Papercraft</h3>
-              <p class="tl_main_logo_lead">Made for My Best Xyc～❤️</p>
-            </div>
-          </div>
+  </section>
 
-          <div class="tl_main_download_mobile clearfix">
-            <div class="tl_main_download_mobile clearfix">
-              <a href="android" class="tl_main_download_link tl_main_download_link_android">
-                <i class="icon icon-android"></i>Papercraft for <strong>Android</strong>
-              </a><a href="ios" class="tl_main_download_link tl_main_download_link_ios">
-                <i class="icon icon-ios"></i>Papercraft for <strong>iPhone</strong> / <strong>iPad</strong>
-              </a><a href="desktop" class="tl_main_download_link tl_main_download_link_tdesktop">
-                Papercraft for <strong>Windows / Mac / Linux</strong>
-              </a>
+  <!-- 更新公告栏 -->
+  <div class="tick" id="ticker" hidden></div>
 
-              <a class="tl_main_download_more_btn" href="apps">Browse more Papercraft apps<i
-                  class="icon icon-arrow-more"></i></a>
-            </div>
-          </div>
+  <!-- 精选 -->
+  <div class="spot-wrap wrap" id="spotlight" hidden></div>
 
-          <div class="tl_main_download_desktop_section">
-            <h3 class="tl_main_download_desktop_header">A native app for every platform</h3>
-
-            <div class="tl_main_download_desktop_wrap1">
-              <div class="tl_main_download_desktop_wrap">
-                <div class="tl_main_download_desktop clearfix">
-                  <div class="tl_main_download_desktop_links clearfix">
-                    <a href="https://web.teamgram.net/a"
-                      class="tl_main_download_desktop_link tl_main_download_link_web">
-                      Papercraft <strong>Web, Version Z.</strong>
-                    </a><a href="/macos" class="tl_main_download_desktop_link tl_main_download_link_osx">
-                      Papercraft&nbsp;for <strong>macOS</strong>
-                    </a><a href="/desktop" class="tl_main_download_desktop_link tl_main_download_link_td">
-                      Papercraft&nbsp;for <strong>PC/Mac/Linux</strong>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="tl_main_noshare clearfix"></div>
-
-        </div>
-
+  <!-- 工具栏 -->
+  <section class="toolbar wrap" id="repos">
+    <div class="tb-head rv">
+      <h2 class="h2">仓库<span class="grad-text">总览</span></h2>
+      <span class="src-chip sec-c" id="srcChip">加载中</span>
+      <div class="tb-side">
+        <button class="btn-reset state" id="resetBtn" data-act="reset" hidden></button>
+        <button class="icon-btn state" id="refreshBtn" aria-label="重新加载数据"></button>
       </div>
+    </div>
+    <div class="tb-panel c-low rv" style="--d:80ms">
+      <label class="search-box c-high" id="searchBox">
+        <span id="searchIcon"></span>
+        <input id="searchInput" type="text" placeholder="搜索仓库名、简介或话题…" autocomplete="off" />
+        <button class="clear state" id="clearSearch" aria-label="清空搜索"></button>
+      </label>
+      <div class="segs-row">
+        <div class="seg c-high" id="segType"></div>
+        <div class="seg c-high" id="segSort"></div>
+        <span class="count-line" id="countLine"></span>
+      </div>
+      <div class="chips" id="langChips"></div>
+    </div>
+  </section>
+
+  <!-- 仓库网格 -->
+  <div class="grid-wrap wrap">
+    <div class="grid" id="grid">
+      <div class="sk" style="height:220px;border-radius:26px"></div>
+      <div class="sk" style="height:220px;border-radius:26px"></div>
+      <div class="sk" style="height:220px;border-radius:26px"></div>
+      <div class="sk" style="height:220px;border-radius:26px"></div>
+      <div class="sk" style="height:220px;border-radius:26px"></div>
+      <div class="sk" style="height:220px;border-radius:26px"></div>
     </div>
   </div>
-  <div class="footer_wrap">
-    <div class="footer_columns_wrap clearfix footer_desktop">
-      <div class="footer_column footer_column_teamgram">
-        <h5>Papercraft</h5>
-        <div class="footer_teamgram_description"></div>
-        Papercraft is a private cloud-based mobile and desktop messaging app with a focus on security and speed.
-      </div>
+</main>
 
-      <div class="footer_column">
-        <h5>About</h5>
-        <ul>
-          <li><a href="#">FAQ</a></li>
-        </ul>
-      </div>
-      <div class="footer_column">
-        <h5><a href="/apps#mobile-apps">Mobile Apps</a></h5>
-        <ul>
-          <li><a href="/ios">iPhone/iPad</a></li>
-          <li><a href="/android">Android</a></li>
-        </ul>
-      </div>
-      <div class="footer_column">
-        <h5><a href="/apps#desktop-apps">Desktop Apps</a></h5>
-        <ul>
-          <li><a href="/desktop">PC/Mac/Linux</a></li>
-          <li><a href="/macos">macOS</a></li>
-          <li><a href="https://web.teamgram.net/a">Web-browser</a></li>
-        </ul>
-      </div>
-      <div class="footer_column footer_column_platform">
-        <h5>Platform</h5>
-        <ul>
-          <li><a href="#">API</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer_columns_wrap clearfix footer_mobile">
-      <div class="footer_column">
-        <h5><a href="#">About</a></h5>
-      </div>
-    </div>
-  </div>
+<footer class="footer">
+  <div class="f-dots"><span></span><span></span><span></span></div>
+  <p class="f-copy">整站配色由 <b>Material You</b> 动态取色引擎实时生成 —— 原生 HTML / CSS / JavaScript 制作。</p>
+  <p class="f-tag">Crafted with <span class="heart" id="heartIcon"></span> for lingyicute · 2026</p>
+</footer>
+
+<button class="fab-top pri state m3-shadow-2" id="fabTop" aria-label="回到顶部" tabindex="-1"></button>
+<div class="scrim" id="scrim" data-act="closepanel" hidden></div>
+<div id="panelHost"></div>
+<div id="snackHost"></div>
+
+<script>
+'use strict';
+/* ================================================================
+   0 · 基础工具
+================================================================ */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function timeAgoZh(iso) {
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 90) return '刚刚';
+  const m = Math.floor(s / 60);
+  if (m < 60) return m + ' 分钟前';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + ' 小时前';
+  const d = Math.floor(h / 24);
+  if (d === 1) return '昨天';
+  if (d < 30) return d + ' 天前';
+  const mo = Math.floor(d / 30);
+  if (mo < 12) return mo + ' 个月前';
+  return Math.floor(mo / 12) + ' 年前';
+}
+function joinYear(iso) { const d = new Date(iso); return d.getFullYear() + ' 年 ' + (d.getMonth() + 1) + ' 月'; }
+
+/* ================================================================
+   1 · 内联 SVG 图标(描边风格,统一 24 视窗)
+================================================================ */
+const P = {
+  star: '<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8l-6.2 3.2L7 14.1 2 9.3l6.9-1z"/>',
+  fork: '<circle cx="6" cy="5" r="2.5"/><circle cx="18" cy="5" r="2.5"/><circle cx="12" cy="19" r="2.5"/><path d="M6 7.5v2a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3v-2"/><path d="M12 12.5v4"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  refresh: '<path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/>',
+  history: '<path d="M3 12a9 9 0 1 0 2.6-6.3L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>',
+  sparkles: '<path d="M12 3l1.9 5.8 5.8 1.9-5.8 1.9L12 18.4l-1.9-5.8-5.8-1.9 5.8-1.9z"/><path d="M19 15v4M17 17h4"/>',
+  copy: '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a13.5 13.5 0 0 1 0 18 13.5 13.5 0 0 1 0-18z"/>',
+  out: '<path d="M7 17 17 7M8 7h9v9"/>',
+  down: '<path d="M12 5v14m0 0 6-6m-6 6-6-6"/>',
+  up: '<path d="M12 19V5m0 0-6 6m6-6 6 6"/>',
+  wand: '<path d="M17 3l.8 2.2L20 6l-2.2.8L17 9l-.8-2.2L14 6l2.2-.8z"/><path d="m3 21 9.5-9.5"/><path d="M15 15l.6 1.7 1.7.6-1.7.6L15 19.6l-.6-1.7-1.7-.6 1.7-.6z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
+  calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+  code: '<path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/>',
+  trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.7V17c0 .6-.5 1-1 1.2C7.9 18.8 7 20.2 7 22"/><path d="M14 14.7V17c0 .6.5 1 1 1.2 1.1.6 2 2 2 3.8"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+  megaphone: '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+  feather: '<path d="M20.2 12.2a6 6 0 0 0-8.5-8.5L5 10.4V19h8.6z"/><path d="M16 8 2 22M17.5 15H9"/>',
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>',
+  az: '<path d="m3 16 4 4 4-4M7 20V4"/><path d="M20 8h-5M15 10V6.5a2.5 2.5 0 0 1 5 0V10M15 14h5l-5 6h5"/>',
+  tag: '<path d="M12.6 2.6 21.4 11.4a2 2 0 0 1 0 2.8l-7.2 7.2a2 2 0 0 1-2.8 0L2.6 12.6A2 2 0 0 1 2 11.2V4a2 2 0 0 1 2-2h7.2a2 2 0 0 1 1.4.6z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+  heart: '<path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/>',
+  archive: '<rect x="2" y="4" width="20" height="5" rx="1"/><path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"/><path d="M10 13h4"/>',
+  loader: '<path d="M21 12a9 9 0 1 1-6.2-8.56"/>',
+  searchx: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="m13.5 8.5-5 5M8.5 8.5l5 5"/>',
+  radio: '<circle cx="12" cy="12" r="2"/><path d="M4.9 19.1a10 10 0 0 1 0-14.2M7.8 16.2a6 6 0 0 1 0-8.4M16.2 7.8a6 6 0 0 1 0 8.4M19.1 4.9a10 10 0 0 1 0 14.2"/>',
+  database: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
+  cloudoff: '<path d="M2 2l20 20"/><path d="M5.8 5.8A5 5 0 0 0 7 15h10a4 4 0 0 0 1.8-7.6A5 5 0 0 0 11.3 2.8"/>',
+  image: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-4.5-4.5L6 21"/>'
+};
+const GITHUB_PATH = 'M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12';
+function ic(name, size, fill) {
+  if (fill) return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' + P[name] + '</svg>';
+  return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P[name] + '</svg>';
+}
+function ghIcon(size) { return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="' + GITHUB_PATH + '"/></svg>'; }
+
+/* ================================================================
+   2 · 语言配色
+================================================================ */
+const LC = { TypeScript:'#3178c6',JavaScript:'#f1e05a',Kotlin:'#A97BFF',Java:'#b07219',Python:'#3572A5',Go:'#00ADD8',Rust:'#dea584','C++':'#f34b7d',C:'#b5b9c4','C#':'#178600',HTML:'#e34c26',CSS:'#663399',SCSS:'#c6538c',Vue:'#41b883',Svelte:'#ff3e00',Shell:'#89e051',Dart:'#00B4AB',Swift:'#F05138',Ruby:'#701516',PHP:'#4F5D95',Lua:'#4c4cf0',Dockerfile:'#384d54','Jupyter Notebook':'#DA5B0B',Astro:'#ff5a03',Haskell:'#5e5086',Scala:'#c22d40',R:'#198CE7',Groovy:'#4298b8','Objective-C':'#438eff',Perl:'#0298c3',PowerShell:'#4273c8',Batchfile:'#C1F12E',CMake:'#DA3434',Makefile:'#427819',Nix:'#7e7eff',Zig:'#ec915c',Elixir:'#6e4a7e',Erlang:'#B83998',Clojure:'#db5855',Assembly:'#6E4C13',MDX:'#e8a23d',TeX:'#3D6117','Vim Script':'#199f4b',QML:'#44a51c' };
+function langColor(n) {
+  if (LC[n]) return LC[n];
+  let h = 0;
+  for (let i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) % 360;
+  return 'hsl(' + h + ' 72% 55%)';
+}
+
+/* ================================================================
+   3 · 色彩引擎
+================================================================ */
+function s2lin(c) { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+function lin2s(c) { c = clamp(c, 0, 1); return c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055; }
+function rgbToOklch(r, g, b) {
+  r = s2lin(r); g = s2lin(g); b = s2lin(b);
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  const L = 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s;
+  const a = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s;
+  const bb = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
+  return [L, Math.hypot(a, bb), ((Math.atan2(bb, a) * 180) / Math.PI + 360) % 360];
+}
+function oklchToRgb(L, C, h) {
+  const hr = (h * Math.PI) / 180;
+  const a = C * Math.cos(hr), bb = C * Math.sin(hr);
+  const l = Math.pow(L + 0.3963377774 * a + 0.2158037573 * bb, 3);
+  const m = Math.pow(L - 0.1055613458 * a - 0.0638541728 * bb, 3);
+  const s = Math.pow(L - 0.0894841775 * a - 1.291485548 * bb, 3);
+  return [
+    lin2s(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s) * 255,
+    lin2s(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s) * 255,
+    lin2s(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s) * 255
+  ];
+}
+function hexToRgb(h) { h = h.replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); const n = parseInt(h, 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+function rgbToHex(r, g, b) { const p = v => Math.round(clamp(v, 0, 255)).toString(16).padStart(2, '0'); return '#' + p(r) + p(g) + p(b); }
+function hexToOklch(h) { return rgbToOklch.apply(null, hexToRgb(h)); }
+function oklchToHex(L, C, h) { return rgbToHex.apply(null, oklchToRgb(L, C, h)); }
+
+/* 调色板 → 指定 tone 值取色(接近黑白时柔和降彩) */
+function tone(pal, t) {
+  const L = clamp(t, 0, 100) / 100;
+  const f = Math.max(0, Math.min(1, L / 0.13, (1 - L) / 0.09));
+  return oklchToHex(L, pal[1] * (0.3 + 0.7 * f), pal[0]);
+}
+function makePalettes(seedHex) {
+  const c = hexToOklch(seedHex), C = c[1], h = c[2];
+  return {
+    a1: [h, clamp(C, 0.05, 0.17)],
+    a2: [h, clamp(C * 0.42, 0.02, 0.06)],
+    a3: [(h + 60) % 360, clamp(C * 0.65, 0.03, 0.11)],
+    n:  [h, clamp(C * 0.12, 0.003, 0.011)],
+    nv: [h, clamp(C * 0.2, 0.005, 0.024)],
+    e:  [28, 0.16]
+  };
+}
+/* M3 角色色 tone 映射表 */
+const ROLES = {
+  light: {
+    primary: ['a1', 40], 'on-primary': ['a1', 100], 'primary-container': ['a1', 90], 'on-primary-container': ['a1', 10],
+    secondary: ['a2', 40], 'on-secondary': ['a2', 100], 'secondary-container': ['a2', 90], 'on-secondary-container': ['a2', 10],
+    tertiary: ['a3', 40], 'on-tertiary': ['a3', 100], 'tertiary-container': ['a3', 90], 'on-tertiary-container': ['a3', 10],
+    error: ['e', 40], 'on-error': ['e', 100], 'error-container': ['e', 90], 'on-error-container': ['e', 10],
+    surface: ['n', 98], 'surface-dim': ['n', 87], 'surface-bright': ['n', 98],
+    'surface-container-lowest': ['n', 100], 'surface-container-low': ['n', 96], 'surface-container': ['n', 94],
+    'surface-container-high': ['n', 92], 'surface-container-highest': ['n', 90],
+    'on-surface': ['n', 10], 'on-surface-variant': ['nv', 30], outline: ['nv', 50], 'outline-variant': ['nv', 80],
+    'inverse-surface': ['n', 20], 'inverse-on-surface': ['n', 95], 'inverse-primary': ['a1', 80]
+  },
+  dark: {
+    primary: ['a1', 80], 'on-primary': ['a1', 20], 'primary-container': ['a1', 30], 'on-primary-container': ['a1', 90],
+    secondary: ['a2', 80], 'on-secondary': ['a2', 20], 'secondary-container': ['a2', 30], 'on-secondary-container': ['a2', 90],
+    tertiary: ['a3', 80], 'on-tertiary': ['a3', 20], 'tertiary-container': ['a3', 30], 'on-tertiary-container': ['a3', 90],
+    error: ['e', 80], 'on-error': ['e', 20], 'error-container': ['e', 30], 'on-error-container': ['e', 90],
+    surface: ['n', 6], 'surface-dim': ['n', 6], 'surface-bright': ['n', 24],
+    'surface-container-lowest': ['n', 4], 'surface-container-low': ['n', 10], 'surface-container': ['n', 12],
+    'surface-container-high': ['n', 17], 'surface-container-highest': ['n', 22],
+    'on-surface': ['n', 90], 'on-surface-variant': ['nv', 80], outline: ['nv', 60], 'outline-variant': ['nv', 30],
+    'inverse-surface': ['n', 90], 'inverse-on-surface': ['n', 20], 'inverse-primary': ['a1', 40]
+  }
+};
+function applyTheme(seedHex, dark) {
+  const p = makePalettes(seedHex), table = ROLES[dark ? 'dark' : 'light'], st = document.documentElement.style;
+  for (const k in table) st.setProperty('--md-' + k, tone(p[table[k][0]], table[k][1]));
+  st.setProperty('--md-blob-1', tone(p.a1, dark ? 30 : 86));
+  st.setProperty('--md-blob-2', tone(p.a3, dark ? 34 : 84));
+  st.setProperty('--md-blob-3', tone(p.a2, dark ? 40 : 86));
+  document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+}
+
+/* 「壁纸取色」同款思路:量化头像像素,按彩度加权取主导色 */
+function seedFromImage(url) {
+  return new Promise(res => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const s = 48, cv = document.createElement('canvas');
+        cv.width = cv.height = s;
+        const cx = cv.getContext('2d', { willReadFrequently: true });
+        cx.drawImage(img, 0, 0, s, s);
+        const d = cx.getImageData(0, 0, s, s).data;
+        const BINS = 24, bins = [];
+        for (let i = 0; i < BINS; i++) bins.push({ w: 0, a: 0, b: 0 });
+        for (let i = 0; i < d.length; i += 4) {
+          if (d[i + 3] < 200) continue;
+          const o = rgbToOklch(d[i], d[i + 1], d[i + 2]), L = o[0], C = o[1], h = o[2];
+          if (C < 0.02 || L < 0.08 || L > 0.97) continue;
+          const w = C * (L > 0.3 && L < 0.85 ? 1 : 0.4);
+          const bi = Math.floor((h / 360) * BINS) % BINS, hr = (h * Math.PI) / 180;
+          bins[bi].w += w; bins[bi].a += Math.cos(hr) * C * w; bins[bi].b += Math.sin(hr) * C * w;
+        }
+        let best = bins[0];
+        for (let i = 1; i < BINS; i++) if (bins[i].w > best.w) best = bins[i];
+        if (best.w <= 0) { res(null); return; }
+        const a = best.a / best.w, bb = best.b / best.w;
+        const C = clamp(Math.hypot(a, bb) * 1.25, 0.07, 0.17);
+        const h = ((Math.atan2(bb, a) * 180) / Math.PI + 360) % 360;
+        res(oklchToHex(0.62, C, h));
+      } catch (e) { res(null); }
+    };
+    img.onerror = () => res(null);
+    img.src = url;
+  });
+}
+
+/* ================================================================
+   4 · 内置快照(GitHub 数据兜底)
+================================================================ */
+const USER = { login: 'lingyicute', avatar_url: 'https://avatars.githubusercontent.com/u/160479206?v=4', html_url: 'https://github.com/lingyicute', followers: 20, following: 1, public_repos: 94, created_at: '2024-02-19T09:32:19Z' };
+/* [id, name, desc, pushed, created, stars, forks] */
+const SNAP = [
+  [930695848, '404', 'My 404 website.', '2026-08-20T06:48:58Z', '2025-02-11T03:53:43Z', 11, 0],
+  [907320323, 'Action-ssh', null, '2025-07-22T05:57:14Z', '2024-12-23T10:17:36Z', 11, 4],
+  [844472398, 'Action-tools', 'Github Action tools', '2024-09-02T23:19:27Z', '2024-08-19T10:32:39Z', 12, 0],
+  [951152908, 'Actions-VM', null, '2025-03-19T08:40:44Z', '2025-03-19T08:40:43Z', 11, 0],
+  [914897128, 'Android-PWA-Box', null, '2025-01-11T04:56:09Z', '2025-01-10T14:33:29Z', 10, 0],
+  [781744879, 'AndroidLibXrayLite', null, '2024-04-14T11:41:31Z', '2024-04-04T00:28:21Z', 11, 0],
+  [881191350, 'Aweb-Dev', 'Telegram Web A, GPL v3', '2024-10-26T09:16:14Z', '2024-10-31T04:18:44Z', 10, 0],
+  [863591874, 'AyuGram4A', 'Just an exteraGram based client with ToS breaking features in mind.', '2023-09-11T02:57:02Z', '2024-09-26T15:00:13Z', 10, 0],
+  [925200803, 'beekeeper-studio-ultimate', 'Modern and easy to use SQL client for MySQL, Postgres, SQLite, SQL Server, and more.', '2025-01-31T13:40:28Z', '2025-01-31T12:31:09Z', 17, 2],
+  [978110834, 'BrowserChecker', null, '2026-07-28T14:51:04Z', '2025-05-05T13:41:19Z', 5, 0],
+  [1004917515, 'Cloudflared-Helper', null, '2025-06-19T12:50:52Z', '2025-06-19T11:33:31Z', 4, 0],
+  [1152859525, 'Coreboot-AutoBuild-A', 'Repo A: for chromeos devices', '2026-07-28T13:39:55Z', '2026-02-08T14:50:49Z', 1, 0],
+  [949484281, 'cromite-build-sh', null, '2025-03-16T15:13:12Z', '2025-03-16T15:12:20Z', 11, 0],
+  [854483868, 'Files', 'A repository for myself.', '2026-08-19T05:01:57Z', '2024-09-09T08:56:18Z', 12, 0],
+  [762303258, 'fluffychat', null, '2025-06-03T09:49:09Z', '2024-02-23T13:55:25Z', 10, 0],
+  [973912188, 'GitHub-Actions-Timer', null, '2025-04-28T01:19:06Z', '2025-04-28T01:19:01Z', 7, 0],
+  [1014745894, 'Go-TCP-Proxy', 'A TCP Proxy written in Go.', '2025-07-07T13:51:30Z', '2025-07-06T10:34:26Z', 3, 0],
+  [973187160, 'HalfMoon', null, '2025-04-27T12:42:33Z', '2025-04-26T13:01:47Z', 8, 0],
+  [952039659, 'HuggingFace-Docker-Build', null, '2025-06-15T10:32:57Z', '2025-03-20T16:28:30Z', 11, 0],
+  [953020109, 'HuggingFace-Docker-FakeImapServer', null, '2025-03-22T11:39:07Z', '2025-03-22T11:39:06Z', 11, 0],
+  [951290913, 'HuggingFace-Docker-Files', null, '2025-03-20T17:01:37Z', '2025-03-19T13:01:21Z', 11, 0],
+  [1002373404, 'HuggingFace-Docker-Webserver', null, '2025-06-15T12:06:04Z', '2025-06-15T10:34:28Z', 4, 0],
+  [929393365, 'Huggingface-worker-proxy', 'Hugging Face Proxy on Cloudflare Worker.', '2025-03-08T13:59:43Z', '2025-02-08T12:54:19Z', 11, 0],
+  [912411035, 'Iridium', null, '2025-02-14T14:56:54Z', '2025-01-05T14:00:21Z', 10, 0],
+  [912850833, 'Iridium-H5', null, '2025-01-06T16:11:03Z', '2025-01-06T14:22:18Z', 10, 0],
+  [932212320, 'Iridium-locales-zh-pak', null, '2025-02-14T07:09:05Z', '2025-02-13T14:55:11Z', 10, 0],
+  [932211640, 'Iridium-resource-pak', null, '2025-02-14T03:04:59Z', '2025-02-13T14:54:02Z', 10, 0],
+  [956012292, 'li-blog', null, '2025-03-27T17:20:39Z', '2025-03-27T14:58:35Z', 11, 0],
+  [927084058, 'LibSagerNetCore', null, '2025-02-04T11:30:40Z', '2025-02-04T11:30:00Z', 11, 0]
+];
+function snapRepo(r) {
+  return { id: r[0], name: r[1], full_name: 'lingyicute/' + r[1], html_url: 'https://github.com/lingyicute/' + r[1],
+    description: r[2], fork: false, archived: false, language: null, stars: r[5], forks: r[6], topics: [],
+    created_at: r[4], pushed_at: r[3], homepage: null, license: null };
+}
+
+/* ================================================================
+   5 · 数据管道:GitHub API → ungh 镜像 → 本地快照
+================================================================ */
+const GH = 'https://api.github.com', UNGH = 'https://ungh.cc', WHO = 'lingyicute';
+async function fetchJSON(url, timeout) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), timeout || 9000);
+  try {
+    const r = await fetch(url, { signal: ctrl.signal, headers: { Accept: 'application/vnd.github+json' } });
+    if (!r.ok) throw new Error(r.status);
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+function normGh(r) {
+  return { id: r.id, name: r.name, full_name: r.full_name, html_url: r.html_url, description: r.description,
+    fork: !!r.fork, archived: !!r.archived, language: r.language || null, stars: r.stargazers_count || 0,
+    forks: r.forks_count || 0, topics: r.topics || [], created_at: r.created_at, pushed_at: r.pushed_at,
+    homepage: r.homepage || null, license: r.license ? r.license.spdx_id : null };
+}
+function normMirror(r) {
+  return { id: r.id, name: r.name, full_name: r.repo, html_url: 'https://github.com/' + r.repo, description: r.description,
+    fork: false, archived: false, language: null, stars: r.stars || 0, forks: r.forks || 0, topics: [],
+    created_at: r.createdAt, pushed_at: r.pushedAt, homepage: null, license: null };
+}
+async function loadData() {
+  try {
+    const user = await fetchJSON(GH + '/users/' + WHO);
+    const repos = [];
+    for (let p = 1; p <= 3; p++) {
+      const chunk = await fetchJSON(GH + '/users/' + WHO + '/repos?per_page=100&sort=updated&page=' + p);
+      repos.push.apply(repos, chunk);
+      if (chunk.length < 100) break;
+    }
+    if (!repos.length) throw 0;
+    return { user: user, repos: repos.map(normGh), source: 'live' };
+  } catch (e) {
+    try {
+      const d = await fetchJSON(UNGH + '/users/' + WHO + '/repos');
+      if (!d.repos || !d.repos.length) throw 0;
+      return { user: Object.assign({}, USER, { public_repos: d.repos.length }), repos: d.repos.map(normMirror), source: 'mirror' };
+    } catch (e2) {
+      return { user: USER, repos: SNAP.map(snapRepo), source: 'snapshot' };
+    }
+  }
+}
+
+/* ================================================================
+   6 · 主题偏好持久化
+================================================================ */
+const LS_DARK = 'lingyi.m3.dark', LS_SEED = 'lingyi.m3.seed';
+function readLS(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function writeLS(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+const DEFAULT_SEED = '#6750A4';
+const SEED_PRESETS = [
+  ['幻梦紫', '#6750A4'], ['晴空蓝', '#0B57D0'], ['湖水青', '#006A6A'],
+  ['抹茶绿', '#3E6837'], ['樱花粉', '#984061'], ['蜜柑橙', '#855318']
+];
+
+let dark = (() => { const v = readLS(LS_DARK); if (v !== null) return v === '1'; return matchMedia('(prefers-color-scheme: dark)').matches; })();
+let seed = readLS(LS_SEED) || DEFAULT_SEED;
+let animTimer = 0;
+function applyThemeAnim(animate) {
+  if (animate && !REDUCED) {
+    document.documentElement.classList.add('theme-anim');
+    applyTheme(seed, dark);
+    clearTimeout(animTimer);
+    animTimer = setTimeout(() => document.documentElement.classList.remove('theme-anim'), 500);
+  } else {
+    applyTheme(seed, dark);
+  }
+}
+function persistTheme() { writeLS(LS_DARK, dark ? '1' : '0'); writeLS(LS_SEED, seed); }
+/* 首帧前应用主题,杜绝闪烁 */
+applyTheme(seed, dark);
+
+/* ================================================================
+   7 · 揭示系统(共享 IntersectionObserver)与计数器
+================================================================ */
+const io = new IntersectionObserver(entries => {
+  for (const e of entries) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+}, { threshold: 0.05, rootMargin: '0px 0px -4% 0px' });
+function attachReveals(root) {
+  $$('.rv:not(.in), .rv-lite:not(.in), .donut:not(.in), .count:not(.done)', root).forEach(el => io.observe(el));
+}
+const countIO = new IntersectionObserver(entries => {
+  for (const e of entries) {
+    if (!e.isIntersecting) continue;
+    countIO.unobserve(e.target);
+    const el = e.target, to = +el.dataset.to || 0;
+    el.classList.add('done');
+    if (REDUCED || !to) { el.textContent = to.toLocaleString('en-US'); continue; }
+    const t0 = performance.now(), dur = 950;
+    const tick = t => {
+      const p = Math.min(1, (t - t0) / dur), ease = 1 - Math.pow(1 - p, 4);
+      el.textContent = Math.round(to * ease).toLocaleString('en-US');
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+}, { threshold: 0.3 });
+function attachCounts(root) { $$('.count', root).forEach(el => countIO.observe(el)); }
+
+/* ================================================================
+   8 · 全局状态
+================================================================ */
+let DATA = null, STATS = null;
+let query = '', sortKey = 'pushed', typeKey = 'all', langKey = null;
+let extracting = false, panelOpen = false;
+
+/* Snackbar */
+let snackTimer = 0, snackOut = 0;
+function toast(msg) {
+  const host = $('#snackHost');
+  host.innerHTML = '<div class="snack inv m3-shadow-2" role="status">' + ic('check', 16) + '<span>' + esc(msg) + '</span></div>';
+  clearTimeout(snackTimer); clearTimeout(snackOut);
+  snackTimer = setTimeout(() => {
+    const el = host.firstElementChild;
+    if (el) el.classList.add('out');
+    snackOut = setTimeout(() => { host.innerHTML = ''; }, 190);
+  }, 2100);
+}
+
+/* ================================================================
+   9 · 渲染
+================================================================ */
+function computeStats() {
+  let stars = 0, forks = 0, forksN = 0;
+  const map = new Map();
+  for (const r of DATA.repos) {
+    stars += r.stars; forks += r.forks;
+    if (r.fork) forksN++;
+    if (r.language) map.set(r.language, (map.get(r.language) || 0) + 1);
+  }
+  const langs = Array.from(map, ([name, count]) => ({ name: name, count: count, color: langColor(name) }))
+    .sort((a, b) => b.count - a.count);
+  STATS = { stars: stars, forks: forks, forksN: forksN, langs: langs };
+}
+
+function filtered() {
+  const q = query.trim().toLowerCase();
+  let list = DATA.repos.filter(r => {
+    if (typeKey === 'source' && r.fork) return false;
+    if (typeKey === 'fork' && !r.fork) return false;
+    if (langKey && r.language !== langKey) return false;
+    if (q) {
+      const hay = (r.name + ' ' + (r.description || '') + ' ' + r.topics.join(' ')).toLowerCase();
+      if (hay.indexOf(q) < 0) return false;
+    }
+    return true;
+  });
+  list = list.slice();
+  if (sortKey === 'stars') list.sort((a, b) => b.stars - a.stars);
+  else if (sortKey === 'created') list.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+  else if (sortKey === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
+  else list.sort((a, b) => +new Date(b.pushed_at) - +new Date(a.pushed_at));
+  return list;
+}
+function isFiltered() { return query !== '' || langKey !== null || typeKey !== 'all' || sortKey !== 'pushed'; }
+
+function maskText(text, base) {
+  let out = '';
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i] === ' ' ? '&nbsp;' : esc(text[i]);
+    out += '<span class="ch" style="--d:' + (base + i * 34) + 'ms" aria-hidden="true">' + ch + '</span>';
+  }
+  return '<span class="rv-mask" aria-label="' + esc(text) + '">' + out + '</span>';
+}
+
+function donutHTML(langs) {
+  const total = langs.reduce((s, l) => s + l.count, 0) || 1;
+  const segs = langs.slice(0, 5);
+  const rest = langs.slice(5).reduce((s, l) => s + l.count, 0);
+  if (rest > 0) segs.push({ name: '其他', count: rest, color: 'var(--md-outline-variant)' });
+  const C = 2 * Math.PI * 52;
+  let acc = 0, circles = '', legend = '';
+  segs.forEach((s, i) => {
+    const frac = s.count / total, off = acc; acc += frac;
+    const len = Math.max(frac * C - 2.5, 1.5);
+    circles += '<circle class="seg-circle" cx="66" cy="66" r="52" fill="none" stroke="' + s.color +
+      '" stroke-width="15" stroke-dasharray="' + len.toFixed(1) + ' ' + C.toFixed(1) +
+      '" transform="rotate(' + (off * 360 - 90).toFixed(1) + ' 66 66)" style="--off:' + len.toFixed(1) + ';--d:' + (300 + i * 90) + 'ms"/>';
+    if (i < 5) {
+      const pct = Math.round(frac * 100);
+      legend += '<li><span class="dot" style="background:' + s.color + '"></span><span class="name">' + esc(s.name) +
+        '</span><span class="bar-track"><span class="bar-fill" style="background:' + s.color + ';--w:' + pct + '%;--d:' + (380 + i * 80) + 'ms"></span></span><span class="pct mono">' + pct + '%</span></li>';
+    }
+  });
+  return '<div class="donut-card donut c-high rv-lite" style="--d:820ms">' +
+    '<div class="donut-head">' + ic('code', 16) + ' 语言构成 <em>' + langs.length + ' 种</em></div>' +
+    '<div class="donut-body"><div class="donut-fig"><svg viewBox="0 0 132 132">' + circles + '</svg>' +
+    '<div class="donut-center"><b>' + langs.length + '</b><span>种语言</span></div></div>' +
+    '<ul class="legend">' + legend + '</ul></div></div>';
+}
+
+function renderHero() {
+  const u = DATA.user, n = DATA.repos.length;
+  $('#brandAvatar').src = u.avatar_url;
+  const tiles = [
+    ['book', '公开仓库', n, 'pri-c', '-0.7deg'],
+    ['star', '收获 Stars', STATS.stars, 'ter-c', '0.7deg'],
+    ['fork', '被 Fork 次数', STATS.forks, 'sec-c', '-0.7deg'],
+    ['users', '关注者', u.followers, 'err-c', '0.7deg']
+  ];
+  let tilesHTML = '';
+  tiles.forEach((t, i) => {
+    tilesHTML += '<div class="rv-lite" style="--d:' + (450 + i * 80) + 'ms"><div class="tile ' + t[3] + '" style="--rot:' + t[4] + '">' +
+      '<span class="tile-ic">' + ic(t[0], 20) + '</span><div><span class="count tile-num" data-to="' + t[2] + '">0</span>' +
+      '<span class="tile-label">' + t[1] + '</span></div></div></div>';
+  });
+  if (STATS.langs.length >= 2) tilesHTML += donutHTML(STATS.langs);
+
+  $('#hero').innerHTML =
+    '<div class="hero-grid"><div>' +
+    '<div class="rv" style="--d:120ms"><span class="eyebrow sec-c">' + ic('sparkles', 14) + ' GITHUB × MATERIAL YOU 动态取色画廊</span></div>' +
+    '<h1 class="h1 rv" style="--d:0ms"><span style="display:block">' + maskText('lingyicute 的', 280) + '</span>' +
+    '<span style="display:block" class="grad-text">' + maskText('开源小宇宙', 640) + '</span></h1>' +
+    '<p class="lead rv" style="--d:820ms">' + n + ' 个公开仓库正在各自的轨道上运行 —— 从 Material 设计音乐播放器到 Telegram 客户端、构建脚本与小工具,每一颗都是认真打磨的星星。</p>' +
+    '<div class="meta-chips rv" style="--d:900ms">' +
+    '<span class="chip-info c-high chip">' + ic('calendar', 14) + ' ' + joinYear(u.created_at) + '加入 GitHub</span>' +
+    '<span class="chip-info c-high chip">' + ic('book', 14) + ' ' + n + ' 仓库</span>' +
+    '<span class="chip-info c-high chip">' + ic('star', 14) + ' ' + STATS.stars + ' Stars</span></div>' +
+    '<div class="cta-row rv" style="--d:1000ms">' +
+    '<a class="btn pri state lift m3-shadow-1" href="' + u.html_url + '" target="_blank" rel="noopener noreferrer">' + ghIcon(20) + ' 访问 GitHub ' + ic('out', 16) + '</a>' +
+    '<button class="btn sec-c state lift" data-act="extract" id="heroExtract">' + ic('wand', 18) + ' 从头像取色</button>' +
+    '<a class="btn btn-txt state lift" href="#repos">浏览仓库 <span class="bob">' + ic('down', 16) + '</span></a>' +
+    '</div></div>' +
+    '<div class="hero-right"><div class="avatar-wrap pop-avatar"><div class="avatar-ring"></div>' +
+    '<div class="avatar-blob avatar-box c-lowest m3-shadow-2"><img class="avatar-blob" src="' + u.avatar_url + '" alt="lingyicute 的头像" /></div>' +
+    '<div class="float-chip floaty ter-c fc-star m3-shadow-1">' + ic('star', 14) + ' ' + STATS.stars + ' stars</div>' +
+    '<div class="float-chip floaty sec-c fc-lang m3-shadow-1">' + ic('code', 14) + ' ' + (STATS.langs.length || '多') + ' 种语言</div>' +
+    '</div><div class="tiles">' + tilesHTML + '</div></div></div>';
+  attachReveals($('#hero'));
+  attachCounts($('#hero'));
+}
+
+function renderTicker() {
+  const items = DATA.repos.slice().sort((a, b) => +new Date(b.pushed_at) - +new Date(a.pushed_at)).slice(0, 10);
+  if (!items.length) return;
+  let track = '<span style="width:160px;flex-shrink:0" aria-hidden="true"></span>';
+  for (const r of items) {
+    track += '<a class="tick-item" href="' + r.html_url + '" target="_blank" rel="noopener noreferrer">' +
+      '<span class="dot"></span><b>' + esc(r.name) + '</b><span>' + timeAgoZh(r.pushed_at) + '更新</span></a>';
+  }
+  const t = $('#ticker');
+  t.innerHTML =
+    '<span class="tick-badge pri-c m3-shadow-1"><span class="ping-dot"></span>' + ic('megaphone', 14) + ' 更新公告</span>' +
+    '<div class="tick-track"><div class="marquee"><div style="display:flex;gap:2.5rem;align-items:center">' + track + '</div><div style="display:flex;gap:2.5rem;align-items:center" aria-hidden="true">' + track + '</div></div></div>';
+  t.hidden = false;
+}
+
+function renderSpotlight() {
+  const pool0 = DATA.repos.filter(r => !r.fork);
+  const pool = pool0.length ? pool0 : DATA.repos.slice();
+  if (!pool.length) return;
+  const r = pool.reduce((b, x) => (x.stars > b.stars ? x : b), pool[0]);
+  const s = $('#spotlight');
+  s.innerHTML =
+    '<div class="rv"><div class="spot pri-c lift">' +
+    '<span class="spot-deco">' + ic('star', 260, true) + '</span><span class="spot-wm mono">01</span>' +
+    '<div style="position:relative"><span class="spot-chip">' + ic('trophy', 14) + ' 社区之星 · 最受欢迎</span>' +
+    '<a class="spot-title" href="' + r.html_url + '" target="_blank" rel="noopener noreferrer"><h3>' + esc(r.name) + '<span class="ic">' + ic('out', 24) + '</span></h3></a>' +
+    (r.description ? '<p class="spot-desc">' + esc(r.description) + '</p>' : '') +
+    '<div class="spot-meta">' +
+    (r.language ? '<span><span class="dot" style="width:10px;height:10px;border-radius:999px;background:' + langColor(r.language) + ';display:inline-block"></span> ' + esc(r.language) + '</span>' : '') +
+    '<span>' + ic('star', 14) + ' ' + r.stars + ' Stars</span>' +
+    '<span>' + ic('fork', 14) + ' ' + r.forks + ' Forks</span>' +
+    '<span class="dim">更新于 ' + timeAgoZh(r.pushed_at) + '</span></div>' +
+    '<div class="spot-actions">' +
+    '<a class="btn pri state lift m3-shadow-1" style="height:48px" href="' + r.html_url + '" target="_blank" rel="noopener noreferrer">打开项目 ' + ic('out', 16) + '</a>' +
+    '<button class="btn btn-ghost lift" style="height:48px" data-copy="' + r.html_url + '.git">' + ic('copy', 16) + ' 复制克隆地址</button>' +
+    '</div></div></div></div>';
+  s.hidden = false;
+  attachReveals(s);
+}
+
+/* 分段控件 */
+const SEG_DEFS = {
+  type: [
+    ['all', '全部', 'grid'],
+    ['source', '原创', 'feather'],
+    ['fork', 'Fork', 'fork']
+  ],
+  sort: [
+    ['pushed', '最近更新', 'history'],
+    ['stars', '最多星标', 'star'],
+    ['created', '最新创建', 'sparkles'],
+    ['name', '名称', 'az']
+  ]
+};
+function segHints(k) {
+  const total = DATA.repos.length;
+  if (k === 'type') return [total, total - STATS.forksN, STATS.forksN];
+  return [null, null, null, null];
+}
+function renderSegs() {
+  [['type', '#segType', typeKey, v => { typeKey = v; }], ['sort', '#segSort', sortKey, v => { sortKey = v; }]].forEach(cfg => {
+    const key = cfg[0], el = $(cfg[1]), cur = cfg[2], hints = segHints(key);
+    let html = '<span class="seg-pill" aria-hidden="true" style="opacity:0"></span>';
+    SEG_DEFS[key].forEach((o, i) => {
+      html += '<button data-v="' + o[0] + '"' + (o[0] === cur ? ' data-active' : '') + '><span>' + ic(o[2], 14) + ' ' + o[1] +
+        (hints[i] !== null ? '<span class="hint">' + hints[i] + '</span>' : '') + '</span></button>';
+    });
+    el.innerHTML = html;
+    $$('button', el).forEach(b => b.addEventListener('click', () => {
+      cfg[3](b.dataset.v);
+      renderSegs();
+      renderGrid();
+    }));
+  });
+  requestAnimationFrame(placePills);
+}
+function placePills() {
+  $$('.seg').forEach(seg => {
+    const pill = $('.seg-pill', seg), btn = seg.querySelector('[data-active]');
+    if (!pill || !btn) return;
+    pill.style.width = btn.offsetWidth + 'px';
+    pill.style.translate = btn.offsetLeft + 'px 0';
+    pill.style.opacity = '1';
+  });
+}
+
+function renderChips() {
+  const el = $('#langChips');
+  if (!STATS.langs.length) { el.innerHTML = ''; return; }
+  let html = '<button class="lg-chip chip ' + (langKey === null ? 'sec-c' : 'off state') + '" data-lang="">' +
+    (langKey === null ? ic('check', 14) : '') + ' 全部语言</button>';
+  STATS.langs.slice(0, 14).forEach(l => {
+    const on = langKey === l.name;
+    html += '<button class="lg-chip chip ' + (on ? 'sec-c' : 'off state') + '" data-lang="' + esc(l.name) + '">' +
+      (on ? ic('check', 14) : '<span class="dot" style="background:' + l.color + '"></span>') + ' ' + esc(l.name) +
+      '<span class="n">' + l.count + '</span></button>';
+  });
+  el.innerHTML = html;
+  $$('button', el).forEach(b => b.addEventListener('click', () => {
+    const v = b.dataset.lang;
+    langKey = v === '' || v === langKey ? null : v;
+    renderChips();
+    renderGrid();
+  }));
+}
+
+function cardHTML(r, i) {
+  let badges = '';
+  if (r.fork) badges += '<span class="badge dim">' + ic('fork', 12) + ' Fork</span>';
+  if (r.archived) badges += '<span class="badge err-c">' + ic('archive', 12) + ' 已归档</span>';
+  if (r.license) badges += '<span class="badge dim">' + ic('tag', 12) + ' ' + esc(r.license) + '</span>';
+  let topics = '';
+  r.topics.slice(0, 3).forEach(t => { topics += '<span class="topic">' + esc(t) + '</span>'; });
+  if (r.topics.length > 3) topics += '<span class="topic-more">+' + (r.topics.length - 3) + '</span>';
+  return '<div class="rv-lite" style="--d:' + Math.min(i * 26, 416) + 'ms">' +
+    '<article class="card" tabindex="0" role="link" data-url="' + r.html_url + '" aria-label="打开仓库 ' + esc(r.full_name) + '">' +
+    '<span class="card-go">' + ic('out', 20) + '</span>' +
+    '<div class="card-head"><span class="card-ic ' + (r.fork ? 'fork' : 'sec-c') + '">' + ic(r.fork ? 'fork' : 'book', 18) + '</span>' +
+    '<h3 class="card-name">' + esc(r.name) + '</h3></div>' +
+    (badges ? '<div class="badges">' + badges + '</div>' : '') +
+    (r.description ? '<p class="desc">' + esc(r.description) + '</p>' : '') +
+    (topics ? '<div class="topics">' + topics + '</div>' : '') +
+    '<div class="card-meta">' +
+    (r.language ? '<b><span class="dot" style="background:' + langColor(r.language) + '"></span> ' + esc(r.language) + '</b>' : '') +
+    (r.stars > 0 ? '<span>' + ic('star', 14) + ' ' + r.stars + '</span>' : '') +
+    (r.forks > 0 ? '<span>' + ic('fork', 14) + ' ' + r.forks + '</span>' : '') +
+    '<span>' + ic('clock', 14) + ' ' + timeAgoZh(r.pushed_at) + '</span>' +
+    '<span class="card-actions">' +
+    (r.homepage ? '<a class="ico-btn state" href="' + (/^https?:\/\//i.test(r.homepage) ? r.homepage : 'https://' + r.homepage) + '" target="_blank" rel="noopener noreferrer" aria-label="打开项目主页">' + ic('globe', 16) + '</a>' : '') +
+    '<button class="ico-btn state" data-copy="' + r.html_url + '.git" aria-label="复制克隆地址">' + ic('copy', 16) + '</button>' +
+    '</span></div></article></div>';
+}
+
+function renderGrid() {
+  const list = filtered(), grid = $('#grid');
+  if (!list.length) {
+    grid.innerHTML = '<div class="empty c-low pop" style="grid-column:1/-1">' +
+      '<span class="empty-ic sec-c">' + ic('searchx', 36) + '</span>' +
+      '<div><h4>没有找到匹配的仓库</h4><p>换个关键词,或者清除全部筛选条件试试。</p></div>' +
+      '<button class="btn pri state lift m3-shadow-1" data-act="reset" style="height:44px">清除筛选</button></div>';
+  } else {
+    grid.innerHTML = list.map(cardHTML).join('');
+  }
+  attachReveals(grid);
+  const line = $('#countLine');
+  line.innerHTML = '显示 <b>' + list.length + '</b> / ' + DATA.repos.length + ' 个仓库';
+  $('#resetBtn').innerHTML = ic('x', 14) + ' 重置筛选';
+  $('#resetBtn').hidden = !isFiltered();
+}
+
+function renderSourceChip() {
+  const m = { live: ['实时数据', 'ter-c', 'radio'], mirror: ['镜像数据', 'sec-c', 'cloudoff'], snapshot: ['本地快照', 'err-c', 'database'] }[DATA.source];
+  const c = $('#srcChip');
+  c.className = 'src-chip ' + m[1];
+  c.innerHTML = ic(m[2], 14) + ' ' + m[0] + ' <span class="n">· ' + DATA.repos.length + '</span>';
+}
+
+function renderAll() {
+  renderHero();
+  renderTicker();
+  renderSpotlight();
+  renderSourceChip();
+  renderSegs();
+  renderChips();
+  renderGrid();
+}
+
+/* ================================================================
+   10 · 交互
+================================================================ */
+/* 取色面板 */
+function renderPanel() {
+  const host = $('#panelHost');
+  if (!panelOpen) {
+    const old = host.firstElementChild;
+    $('#scrim').hidden = true;
+    if (old) {
+      old.classList.add('out');
+      setTimeout(() => { host.innerHTML = ''; }, 190);
+    }
+    return;
+  }
+  let sw = '';
+  SEED_PRESETS.forEach((p, i) => {
+    const on = seed.toLowerCase() === p[1].toLowerCase();
+    sw += '<button class="swatch pop lift' + (on ? ' active' : '') + '" style="background:' + p[1] + ';--d:' + (120 + i * 40) + 'ms" data-seed="' + p[1] + '" title="' + p[0] + '" aria-label="使用' + p[0] + '主题">' +
+      (on ? ic('check', 16) : '') + '</button>';
+  });
+  host.innerHTML =
+    '<div class="panel popover c-high m3-shadow-3" role="dialog" aria-label="动态取色面板">' +
+    '<p class="panel-k">MATERIAL YOU</p><h3>动态取色</h3>' +
+    '<div class="swatches">' + sw + '</div>' +
+    '<button class="panel-wide sec-c state lift" data-act="extract" id="panelExtract">' + ic('wand', 16) + ' 从头像提取主题色</button>' +
+    '<p class="panel-note">' + ic('image', 14) + '<span>与 Android「壁纸取色」同源:量化头像像素并评分,生成整套色调方案。</span></p></div>';
+  $('#scrim').hidden = false;
+  $$('[data-seed]', host).forEach(b => b.addEventListener('click', () => {
+    seed = b.dataset.seed;
+    persistTheme();
+    applyThemeAnim(true);
+    toast('主题色已更新');
+    /* 只更新选中态,避免面板重播入场动画 */
+    $$('[data-seed]', host).forEach(x => {
+      const on2 = x.dataset.seed.toLowerCase() === seed.toLowerCase();
+      x.classList.toggle('active', on2);
+      x.innerHTML = on2 ? ic('check', 16) : '';
+    });
+  }));
+}
+function togglePanel() { panelOpen = !panelOpen; renderPanel(); }
+function closePanel() { if (panelOpen) { panelOpen = false; renderPanel(); } }
+
+/* 从头像取色 */
+async function extractAvatar() {
+  if (extracting || !DATA) return;
+  extracting = true;
+  ['#heroExtract', '#panelExtract'].forEach(sel => {
+    const b = $(sel);
+    if (b) { b.setAttribute('disabled', ''); b.classList.add('state'); }
+  });
+  const hb = $('#heroExtract');
+  if (hb) hb.innerHTML = '<span class="spin" style="display:flex">' + ic('loader', 18) + '</span> 正在取色…';
+  const pb = $('#panelExtract');
+  if (pb) pb.innerHTML = '<span class="spin" style="display:flex">' + ic('loader', 16) + '</span> 正在取色…';
+  const color = await seedFromImage(DATA.user.avatar_url);
+  extracting = false;
+  if (hb) { hb.removeAttribute('disabled'); hb.innerHTML = ic('wand', 18) + ' 从头像取色'; }
+  if (pb) { pb.removeAttribute('disabled'); pb.innerHTML = ic('wand', 16) + ' 从头像提取主题色'; }
+  if (color) {
+    seed = color;
+    persistTheme();
+    applyThemeAnim(true);
+    toast('已从头像提取全新主题色');
+  } else {
+    toast('头像取色失败,已保留当前主题');
+  }
+}
+
+/* 复制 */
+function copyText(t) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(t).catch(() => fallbackCopy(t));
+  } else fallbackCopy(t);
+}
+function fallbackCopy(t) {
+  const ta = document.createElement('textarea');
+  ta.value = t; document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); } catch (e) {}
+  ta.remove();
+}
+
+/* 全局事件委托 */
+document.addEventListener('click', e => {
+  const act = e.target.closest('[data-act]');
+  if (act) {
+    const a = act.dataset.act;
+    if (a === 'palette') togglePanel();
+    else if (a === 'closepanel') closePanel();
+    else if (a === 'extract') extractAvatar();
+    else if (a === 'reset') resetFilters();
+    return;
+  }
+  const cp = e.target.closest('[data-copy]');
+  if (cp) {
+    e.stopPropagation();
+    copyText(cp.dataset.copy);
+    if (cp.tagName === 'BUTTON') {
+      const old = cp.innerHTML;
+      cp.innerHTML = ic('check', 16);
+      setTimeout(() => { cp.innerHTML = old; }, 1600);
+    }
+    toast('已复制克隆地址');
+  }
+});
+function resetFilters() {
+  query = ''; langKey = null; typeKey = 'all'; sortKey = 'pushed';
+  const si = $('#searchInput'); si.value = '';
+  $('#searchBox').classList.remove('has-q');
+  closePanel();
+  renderSegs(); renderChips(); renderGrid();
+}
+
+/* 网格点击(打开 / 复制) */
+$('#grid').addEventListener('click', e => {
+  if (e.target.closest('[data-copy]') || e.target.closest('a.ico-btn')) return;
+  const card = e.target.closest('.card');
+  if (card) window.open(card.dataset.url, '_blank', 'noopener');
+});
+$('#grid').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (e.target.closest('button') || e.target.closest('a')) return;
+  const card = e.target.closest('.card');
+  if (card) window.open(card.dataset.url, '_blank', 'noopener');
+});
+
+/* 搜索 */
+let searchTimer = 0;
+$('#searchInput').addEventListener('input', e => {
+  const v = e.target.value;
+  $('#searchBox').classList.toggle('has-q', v !== '');
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { query = v; if (DATA) renderGrid(); }, 140);
+});
+$('#clearSearch').addEventListener('click', () => {
+  const si = $('#searchInput');
+  si.value = '';
+  $('#searchBox').classList.remove('has-q');
+  query = '';
+  if (DATA) renderGrid();
+  si.focus();
+});
+
+/* 刷新 */
+$('#refreshBtn').innerHTML = ic('refresh', 18);
+$('#refreshBtn').addEventListener('click', () => {
+  const b = $('#refreshBtn');
+  b.innerHTML = '<span class="spin" style="display:flex">' + ic('loader', 18) + '</span>';
+  loadData().then(d => {
+    DATA = d; computeStats();
+    b.innerHTML = ic('refresh', 18);
+    renderAll();
+    toast('数据已刷新');
+  });
+});
+
+/* 深浅色切换 */
+function renderDarkBtn() {
+  $('#darkBtn').innerHTML = '<span class="icon-pop">' + ic(dark ? 'moon' : 'sun', 20) + '</span>';
+  $('#darkBtn').setAttribute('aria-label', dark ? '切换到浅色模式' : '切换到深色模式');
+}
+$('#darkBtn').addEventListener('click', () => {
+  dark = !dark;
+  persistTheme();
+  applyThemeAnim(true);
+  renderDarkBtn();
+});
+
+/* 滚动:进度条 + 顶栏 + 回顶 FAB(单监听,rAF 节流) */
+let ticking = false;
+function onScroll() {
+  if (ticking) return;
+  ticking = true;
+  requestAnimationFrame(() => {
+    ticking = false;
+    const h = document.documentElement, y = h.scrollTop;
+    const max = h.scrollHeight - h.clientHeight;
+    $('#progress').style.transform = 'scaleX(' + (max > 0 ? Math.min(1, y / max) : 0) + ')';
+    $('#topbar').classList.toggle('scrolled', y > 12);
+    const fab = $('#fabTop');
+    const show = y > 640;
+    fab.classList.toggle('show', show);
+    fab.tabIndex = show ? 0 : -1;
+  });
+}
+addEventListener('scroll', onScroll, { passive: true });
+addEventListener('resize', onScroll, { passive: true });
+$('#fabTop').innerHTML = ic('up', 24);
+$('#fabTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' }));
+addEventListener('resize', placePills, { passive: true });
+
+/* 静态图标填充 */
+$('#ghLink').innerHTML = ghIcon(20);
+$('#paletteBtnIcon').innerHTML = ic('wand', 18);
+$('#searchIcon').innerHTML = ic('search', 20);
+$('#clearSearch').innerHTML = ic('x', 16);
+$('#heartIcon').innerHTML = ic('heart', 14, true);
+renderDarkBtn();
+onScroll();
+/* 字体就绪后重新测量分段指示器宽度 */
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => requestAnimationFrame(placePills));
+
+/* ================================================================
+   11 · 启动
+================================================================ */
+loadData().then(d => {
+  DATA = d;
+  computeStats();
+  renderAll();
+  /* Material You 时刻:首次访问从头像取色(已有记忆偏好则跳过) */
+  if (!readLS(LS_SEED)) {
+    seedFromImage(d.user.avatar_url).then(c => {
+      if (c && !readLS(LS_SEED)) { seed = c; applyThemeAnim(true); }
+    });
+  }
+});
+</script>
 </body>
-
 </html>
