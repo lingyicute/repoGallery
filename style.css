@@ -1,7 +1,7 @@
 /* 全局字体 */
 @font-face {
   font-family: 'Nebulove';
-  src: url('https://github.com/lingyicute/Nebulove/raw/refs/heads/main/Nebulove.ttf') format('truetype');
+  src: url('https://raw.githubusercontent.com/lingyicute/Nebulove/main/Nebulove.ttf') format('truetype');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -48,7 +48,6 @@ html.theme-anim, html.theme-anim * {
 }
 html.theme-anim .blob, html.theme-anim .topbar, html.theme-anim .progress, html.theme-anim .snack { transition:none !important; }
 
-/* ——— 角色色工具类 ——— */
 .c-lowest{background-color:var(--md-surface-container-lowest)}
 .c-low{background-color:var(--md-surface-container-low)}
 .c-high{background-color:var(--md-surface-container-high)}
