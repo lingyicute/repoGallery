@@ -15,9 +15,15 @@
 <link rel="stylesheet" href="./style.css" />
 <title>lingyicute's Open Source Gallery</title>
 </head>
-<body>
+<body class="page-loading" aria-busy="true">
 
 <div class="blobs" aria-hidden="true"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
+<div class="page-loader" id="pageLoader" role="status" aria-live="polite" aria-label="正在加载页面">
+  <div class="page-loader-inner c-high m3-shadow-2">
+    <span class="page-loader-spinner" aria-hidden="true"></span>
+    <span class="page-loader-label">正在加载</span>
+  </div>
+</div>
 <div class="progress" id="progress"></div>
 
 <header class="topbar" id="topbar">
@@ -275,12 +281,12 @@ const ROLES = {
   }
 };
 function applyTheme(seedHex, dark) {
-  const p = makePalettes(seedHex), table = ROLES[dark ? 'dark' : 'light'], st = document.documentElement.style;
-  for (const k in table) st.setProperty('--md-' + k, tone(p[table[k][0]], table[k][1]));
-  st.setProperty('--md-blob-1', tone(p.a1, dark ? 30 : 86));
-  st.setProperty('--md-blob-2', tone(p.a3, dark ? 34 : 84));
-  st.setProperty('--md-blob-3', tone(p.a2, dark ? 40 : 86));
-  document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+  const p = makePalettes(seedHex), table = ROLES[dark ? 'dark' : 'light'], vars = [];
+  for (const k in table) vars.push('--md-' + k + ':' + tone(p[table[k][0]], table[k][1]));
+  vars.push('--md-blob-1:' + tone(p.a1, dark ? 30 : 86));
+  vars.push('--md-blob-2:' + tone(p.a3, dark ? 34 : 84));
+  vars.push('--md-blob-3:' + tone(p.a2, dark ? 40 : 86));
+  document.documentElement.style.cssText = vars.join(';') + ';color-scheme:' + (dark ? 'dark' : 'light') + ';';
 }
 
 /* 「壁纸取色」同款思路:量化头像像素,按彩度加权取主导色 */
@@ -427,7 +433,7 @@ function applyThemeAnim(animate) {
     document.documentElement.classList.add('theme-anim');
     applyTheme(seed, dark);
     clearTimeout(animTimer);
-    animTimer = setTimeout(() => document.documentElement.classList.remove('theme-anim'), 500);
+    animTimer = setTimeout(() => document.documentElement.classList.remove('theme-anim'), 240);
   } else {
     applyTheme(seed, dark);
   }
@@ -445,6 +451,8 @@ const io = new IntersectionObserver(entries => {
 function attachReveals(root) {
   $$('.rv:not(.in), .rv-lite:not(.in), .donut:not(.in), .count:not(.done)', root).forEach(el => io.observe(el));
 }
+/* 工具栏是静态骨架，不会经过动态渲染；启动时也要注册揭示观察器 */
+attachReveals(document);
 const countIO = new IntersectionObserver(entries => {
   for (const e of entries) {
     if (!e.isIntersecting) continue;
@@ -965,19 +973,63 @@ onScroll();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => requestAnimationFrame(placePills));
 
 /* ================================================================
-   11 · 启动
+   11 · 启动与首屏加载
 ================================================================ */
-loadData().then(d => {
+function whenWindowLoaded() {
+  if (document.readyState === 'complete') return Promise.resolve();
+  return new Promise(resolve => addEventListener('load', resolve, { once: true }));
+}
+function whenFontsReady() {
+  return document.fonts && document.fonts.ready ? document.fonts.ready.catch(() => {}) : Promise.resolve();
+}
+function whenImagesReady(root) {
+  const images = $$('img', root);
+  return Promise.all(images.map(img => {
+    if (img.complete) return img.decode ? img.decode().catch(() => {}) : Promise.resolve();
+    return new Promise(resolve => {
+      const done = () => resolve();
+      img.addEventListener('load', done, { once: true });
+      img.addEventListener('error', done, { once: true });
+    });
+  }));
+}
+function releasePageLoader() {
+  const loader = $('#pageLoader');
+  document.body.classList.remove('page-loading');
+  document.body.removeAttribute('aria-busy');
+  if (!loader) return;
+  loader.classList.add('is-ready');
+  loader.setAttribute('aria-hidden', 'true');
+  setTimeout(() => loader.remove(), 420);
+}
+
+async function bootPage() {
+  let d;
+  try {
+    [d] = await Promise.all([loadData(), whenWindowLoaded(), whenFontsReady()]);
+  } catch (e) {
+    /* 数据管道本身有兜底；这里再保留一层保护，避免加载层卡住 */
+    console.error('页面初始化失败,使用本地快照', e);
+    d = { user: USER, repos: SNAP.map(snapRepo), source: 'snapshot' };
+  }
+
   DATA = d;
   computeStats();
   renderAll();
+
   /* Material You 时刻:首次访问从头像取色(已有记忆偏好则跳过) */
-  if (!readLS(LS_SEED)) {
-    seedFromImage(d.user.avatar_url).then(c => {
-      if (c && !readLS(LS_SEED)) { seed = c; applyThemeAnim(true); }
-    });
-  }
-});
+  const autoSeed = !readLS(LS_SEED)
+    ? seedFromImage(d.user.avatar_url).then(c => {
+        if (c && !readLS(LS_SEED)) { seed = c; applyThemeAnim(true); }
+      })
+    : Promise.resolve();
+
+  /* 动态渲染出的头像也要完成解码，确保放行时不再出现半成品 */
+  await Promise.all([whenFontsReady(), whenImagesReady(document), autoSeed]);
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  releasePageLoader();
+}
+bootPage();
 </script>
 </body>
 </html>
