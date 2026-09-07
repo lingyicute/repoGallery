@@ -1,7 +1,7 @@
 /* 全局字体 */
 @font-face {
   font-family: 'Nebulove';
-  src: url('https://raw.githubusercontent.com/lingyicute/Nebulove/main/Nebulove.ttf') format('truetype');
+  src: url('https://nebulove.92li.uk/Nebulove.woff2') format('woff2');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
