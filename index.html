@@ -2213,13 +2213,15 @@ function filtered() {
 }
 function isFiltered() { return query !== '' || langKey !== null || typeKey !== 'all' || sortKey !== 'pushed'; }
 
-function maskText(text, base) {
+function maskText(text, base, extra) {
   let out = '';
   for (let i = 0; i < text.length; i++) {
     const ch = text[i] === ' ' ? '&nbsp;' : esc(text[i]);
     out += '<span class="ch" style="--d:' + (base + i * 34) + 'ms" aria-hidden="true">' + ch + '</span>';
   }
-  return '<span class="rv-mask" aria-label="' + esc(text) + '">' + out + '</span>';
+  /* extra(如 grad-text)必须落在 .rv-mask 自身:WebKit 的 background-clip:text
+     不会裁剪到后代 span 的文本,渐变加在父元素上会导致文字透明不可见 */
+  return '<span class="rv-mask' + (extra ? ' ' + extra : '') + '" aria-label="' + esc(text) + '">' + out + '</span>';
 }
 
 function donutHTML(langs) {
@@ -2269,7 +2271,7 @@ function renderHero() {
     '<div class="hero-grid"><div>' +
     '<div class="rv" style="--d:120ms"><span class="eyebrow sec-c">' + ic('sparkles', 14) + 'Made with Love</span></div>' +
     '<h1 class="h1 rv" style="--d:0ms"><span style="display:block">' + maskText('lingyicute\'s', 280) + '</span>' +
-    '<span style="display:block" class="grad-text">' + maskText('Open Source Gallery', 640) + '</span></h1>' +
+    '<span style="display:block">' + maskText('Open Source Gallery', 640, 'grad-text') + '</span></h1>' +
     '<p class="lead rv" style="--d:820ms">' + n + ' 个公开仓库正在发芽 —— 需要的话，拿去就好。</p>' +
     '<div class="meta-chips rv" style="--d:900ms">' +
     '<span class="chip-info c-high chip">2016 年 7 月加入 GitHub</span>' +
