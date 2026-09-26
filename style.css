@@ -80,6 +80,8 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 .t-on-sec-c{color:var(--md-on-secondary-container)}
 .mono{font-family:"Nebulove","JetBrains Mono",monospace}
 .grad-text{background:linear-gradient(100deg,var(--md-primary) 10%,var(--md-tertiary) 60%,var(--md-secondary) 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+/* 不支持 background-clip:text 的旧引擎回退为实色,避免透明文字不可见 */
+@supports not ((-webkit-background-clip:text) or (background-clip:text)){.grad-text{background:none;color:var(--md-primary)}}
 .b-outline{border-color:var(--md-outline-variant)}
 
 .m3-shadow-1{box-shadow:0 1px 2px color-mix(in srgb,var(--md-shadow) 30%,transparent),0 1px 3px 1px color-mix(in srgb,var(--md-shadow) 15%,transparent)}
@@ -342,12 +344,15 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 
 /* ——— 揭示系统(共享 IO 加 .in) ——— */
 .rv{opacity:0;translate:0 26px;filter:blur(5px);transition:opacity .75s var(--e) var(--d,0ms),translate .75s var(--e) var(--d,0ms),filter .75s var(--e) var(--d,0ms)}
-.rv.in{opacity:1;translate:0 0;filter:blur(0)}
+.rv.in{opacity:1;translate:0 0;filter:none}
 .rv-lite{opacity:0;translate:0 22px;content-visibility:auto;contain-intrinsic-size:auto 200px;transition:opacity .6s var(--e) var(--d,0ms),translate .6s var(--e) var(--d,0ms)}
 .rv-lite.in{opacity:1;translate:0 0}
 .rv-mask{display:inline-flex;overflow:hidden;padding-block:.06em .12em;margin-block:-.06em -.12em}
-.ch{display:inline-block;translate:0 118%;rotate:8deg;transform-origin:left bottom;transition:translate .8s var(--e) var(--d,0ms),rotate .8s var(--e) var(--d,0ms)}
-.in .ch{translate:0 0;rotate:0deg}
+/* 用 transform 而非独立 translate/rotate 属性做逐字揭示,且终态必须为 none:
+   WebKit 下 .ch 只要带非 none 的 translate/rotate/transform,祖先
+   background-clip:text 的渐变就不绘制(文字透明不可见) */
+.ch{display:inline-block;transform:translateY(118%) rotate(8deg);transform-origin:left bottom;transition:transform .8s var(--e) var(--d,0ms)}
+.in .ch{transform:none}
 
 /* ——— 其他关键帧 ——— */
 @keyframes pop-scale{from{opacity:0;scale:.4}to{opacity:1;scale:1}}
@@ -364,7 +369,7 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 /* ——— 减少动态效果 ——— */
 @media (prefers-reduced-motion:reduce){
   .blob,.marquee,.avatar-blob,.avatar-ring,.floaty,.bob,.page-loader-spinner{animation:none!important}
-  .rv,.rv-lite,.ch{transition:none!important;opacity:1!important;translate:none!important;rotate:none!important;filter:none!important}
+  .rv,.rv-lite,.ch{transition:none!important;opacity:1!important;translate:none!important;rotate:none!important;transform:none!important;filter:none!important}
   .rv-lite{content-visibility:visible}
   .pop,.pop-avatar,.icon-pop,.popover,.snack{animation-duration:.01ms!important}
   html{scroll-behavior:auto}
