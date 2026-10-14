@@ -25,7 +25,8 @@
 }
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html { scroll-behavior:smooth; }
+[hidden] { display:none!important; }
+html { scroll-behavior:smooth; scroll-padding-top:80px; }
 body {
   font-family:"Nebulove","Noto Sans SC","Plus Jakarta Sans",system-ui,-apple-system,sans-serif;
   background:var(--md-surface); color:var(--md-on-surface);
@@ -139,6 +140,7 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 /* ——— Hero ——— */
 .hero{padding-top:112px}
 @media(min-width:640px){.hero{padding-top:140px}}
+.hero-grid>*{min-width:0}
 .hero-grid{display:grid;gap:48px;align-items:center}
 @media(min-width:992px){.hero-grid{grid-template-columns:1.1fr .9fr}}
 .eyebrow{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:8px 16px;font-size:12px;font-weight:700;letter-spacing:.04em}
@@ -200,7 +202,7 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 .tick{position:relative;border-top:1px solid;border-bottom:1px solid;border-color:color-mix(in srgb,var(--md-outline-variant) 60%,transparent);padding:12px 0;margin-top:80px}
 .tick-track{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
 .marquee{display:flex;width:max-content;align-items:center;gap:2.5rem;animation:marquee 36s linear infinite}
-.tick:hover .marquee{animation-play-state:paused}
+.tick:hover .marquee,.tick:focus-within .marquee{animation-play-state:paused}
 @keyframes marquee{to{transform:translateX(calc(-50% - 1.25rem))}}
 .tick-item{display:flex;align-items:center;gap:8px;white-space:nowrap}
 .tick-item .dot{width:6px;height:6px;border-radius:999px;background:var(--md-tertiary)}
@@ -267,8 +269,8 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 .lg-chip .n{font-size:10px;font-weight:600;opacity:.6;font-family:"JetBrains Mono",monospace}
 
 /* ——— 仓库网格 ——— */
-.grid-wrap{padding:28px 0 16px}
-.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+.grid-wrap{padding-top:28px;padding-bottom:16px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(min(290px,100%),1fr))}
 .card{position:relative;display:flex;flex-direction:column;gap:14px;height:100%;border-radius:26px;padding:20px;overflow:hidden;cursor:pointer;background:var(--md-surface-container-low);border:1px solid color-mix(in srgb,var(--md-outline-variant) 70%,transparent);transition:translate .35s var(--e),box-shadow .35s var(--e),background-color .3s var(--e),border-color .3s var(--e)}
 .card:hover,.card:focus-visible{translate:0 -8px;background:var(--md-surface-container-high);box-shadow:0 2px 3px color-mix(in srgb,var(--md-shadow) 22%,transparent),0 16px 28px -8px color-mix(in srgb,var(--md-shadow) 22%,transparent)}
 .card:active{translate:0 -3px}
@@ -286,7 +288,7 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 .topics{display:flex;flex-wrap:wrap;gap:6px}
 .topic{border:1px solid var(--md-outline-variant);border-radius:999px;padding:4px 10px;font-size:10px;font-weight:700;color:var(--md-on-surface-variant)}
 .topic-more{padding:4px 6px;font-size:10px;font-weight:700;color:var(--md-outline)}
-.card-meta{margin-top:auto;display:flex;align-items:center;gap:14px;padding-top:14px;font-size:12px;color:var(--md-on-surface-variant);border-top:1px solid color-mix(in srgb,var(--md-outline-variant) 55%,transparent)}
+.card-meta{margin-top:auto;display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding-top:14px;font-size:12px;color:var(--md-on-surface-variant);border-top:1px solid color-mix(in srgb,var(--md-outline-variant) 55%,transparent)}
 .card-meta b{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--md-on-surface)}
 .card-meta span{display:flex;align-items:center;gap:4px;font-weight:600}
 .card-meta .dot{width:10px;height:10px;border-radius:999px}
@@ -319,6 +321,7 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 @keyframes pop-out{to{opacity:0;scale:.95;translate:0 -6px}}
 .popover{transform-origin:top right;animation:pop-in .32s var(--e) both}
 .popover.out{animation:pop-out .19s ease-in both}
+.panel-close{position:absolute;right:12px;top:12px}
 .panel-k{font-size:11px;font-weight:700;letter-spacing:.18em;color:var(--md-on-surface-variant)}
 .panel h3{margin-top:4px;font-size:18px;font-weight:800;letter-spacing:-.01em;color:var(--md-on-surface)}
 .swatches{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:16px}
@@ -371,6 +374,18 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
   .blob,.marquee,.avatar-blob,.avatar-ring,.floaty,.bob,.page-loader-spinner{animation:none!important}
   .rv,.rv-lite,.ch{transition:none!important;opacity:1!important;translate:none!important;rotate:none!important;transform:none!important;filter:none!important}
   .rv-lite{content-visibility:visible}
-  .pop,.pop-avatar,.icon-pop,.popover,.snack{animation-duration:.01ms!important}
+  .pop,.pop-avatar,.icon-pop,.popover,.snack{animation-duration:.01ms!important;animation-delay:0s!important}
   html{scroll-behavior:auto}
+}
+
+/* 窄屏保持顶栏按钮可见，网格与长文本不得撑破视口。 */
+.icon-btn,.pill-btn,.ico-btn{flex-shrink:0}
+.card-head,.card-name{min-width:0}
+.desc,.topic,.spot-desc{overflow-wrap:anywhere}
+@media(max-width:399px){
+  .brand{gap:6px;padding-right:6px}
+  .brand-t b{font-size:13px}
+  .brand-t span{font-size:9px}
+  .topbar-in{gap:4px;padding-inline:12px}
+  .pill-btn{padding-inline:12px;margin-left:0}
 }
