@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="lingyicute's Open Source Gallery'" />
+<meta name="description" content="lingyicute's Open Source Gallery" />
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fdf8ff" />
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#141218" />
 <link rel="icon" href="https://92li.uk/static/img/heartface.png" />
@@ -85,7 +85,7 @@
     <div class="spacer"></div>
     <a class="icon-btn state" href="https://github.com/lingyicute" target="_blank" rel="noopener noreferrer" aria-label="GitHub 主页" id="ghLink"></a>
     <button class="icon-btn state" id="darkBtn" aria-label="切换深浅色"></button>
-    <button class="pill-btn pri-c state lift" data-act="palette"><span id="paletteBtnIcon"></span><span class="txt">换个颜色</span></button>
+    <button class="pill-btn pri-c state lift" data-act="palette" aria-label="打开配色面板" aria-haspopup="dialog" aria-expanded="false" aria-controls="panelHost"><span id="paletteBtnIcon"></span><span class="txt">换个颜色</span></button>
   </div>
 </header>
 
@@ -135,13 +135,13 @@
     <div class="tb-panel c-low rv" style="--d:80ms">
       <label class="search-box c-high" id="searchBox">
         <span id="searchIcon"></span>
-        <input id="searchInput" type="text" placeholder="搜索仓库名、简介或话题…" autocomplete="off" />
+        <input id="searchInput" type="search" aria-label="搜索仓库名、简介或话题" placeholder="搜索仓库名、简介或话题…" autocomplete="off" />
         <button class="clear state" id="clearSearch" aria-label="清空搜索"></button>
       </label>
       <div class="segs-row">
         <div class="seg c-high" id="segType"></div>
         <div class="seg c-high" id="segSort"></div>
-        <span class="count-line" id="countLine"></span>
+        <span class="count-line" id="countLine" role="status" aria-live="polite"></span>
       </div>
       <div class="chips" id="langChips"></div>
     </div>
@@ -169,7 +169,8 @@
 <button class="fab-top pri state m3-shadow-2" id="fabTop" aria-label="回到顶部" tabindex="-1"></button>
 <div class="scrim" id="scrim" data-act="closepanel" hidden></div>
 <div id="panelHost"></div>
-<div id="snackHost"></div>
+<div id="snackHost" role="status" aria-live="polite"></div>
+<noscript><style>.page-loader{display:none!important}</style><p>此展示页需要 JavaScript。你也可以直接<a href="https://github.com/lingyicute?tab=repositories">浏览 GitHub 仓库</a>。</p></noscript>
 
 <script>
 'use strict';
@@ -181,9 +182,26 @@ const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// URL 协议校验与 HTML 属性转义是两道不同的边界，不能互相替代。
+function safeHttpURL(value, allowBare = false) {
+  if (typeof value !== 'string') return '';
+  let text = value.trim();
+  if (!text || /[\u0000-\u0020\u007f<>"'\\]/.test(text)) return '';
+  if (allowBare && !/^[a-z][a-z\d+.-]*:/i.test(text)) text = 'https://' + text.replace(/^\/\//, '');
+  try {
+    const url = new URL(text);
+    return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password ? url.href : '';
+  } catch (e) { return ''; }
+}
+const repoURL = r => safeHttpURL(r.html_url) || 'https://github.com/' + WHO + '/' + encodeURIComponent(r.name);
+const dateValue = value => typeof value === 'string' ? Date.parse(value) || 0 : 0;
+const countValue = value => Number.isSafeInteger(value) && value >= 0 ? value : 0;
+
 
 function timeAgoZh(iso) {
-  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  const date = dateValue(iso);
+  if (!date) return '时间未知';
+  const s = Math.max(0, (Date.now() - date) / 1000);
   if (s < 90) return '刚刚';
   const m = Math.floor(s / 60);
   if (m < 60) return m + ' 分钟前';
@@ -196,7 +214,7 @@ function timeAgoZh(iso) {
   if (mo < 12) return mo + ' 个月前';
   return Math.floor(mo / 12) + ' 年前';
 }
-function joinYear(iso) { const d = new Date(iso); return d.getFullYear() + ' 年 ' + (d.getMonth() + 1) + ' 月'; }
+function joinYear(iso) { const d = new Date(iso); return dateValue(iso) ? d.getUTCFullYear() + ' 年 ' + (d.getUTCMonth() + 1) + ' 月' : '未知时间'; }
 
 /* ================================================================
    1 · 内联 SVG 图标(描边风格,统一 24 视窗)
@@ -340,9 +358,16 @@ function applyTheme(seedHex, dark) {
 }
 
 /* 「壁纸取色」同款思路:量化头像像素,按彩度加权取主导色 */
-function seedFromImage(url) {
-  return new Promise(res => {
+function seedFromImage(url, timeoutMs = 3000) {
+  return new Promise(resolve => {
     const img = new Image();
+    // 首屏传入 0：等待真实完成或错误；仅手动取色使用操作超时。
+    const timer = timeoutMs > 0 ? setTimeout(() => { res(null); img.removeAttribute('src'); }, timeoutMs) : 0;
+    const res = value => {
+      clearTimeout(timer);
+      img.onload = img.onerror = null;
+      resolve(value);
+    };
     img.crossOrigin = 'anonymous';
     img.onload = () => {
       try {
@@ -371,7 +396,7 @@ function seedFromImage(url) {
       } catch (e) { res(null); }
     };
     img.onerror = () => res(null);
-    img.src = url;
+    img.src = safeHttpURL(url);
   });
 }
 
@@ -2046,7 +2071,7 @@ const SNAP = [
 function snapRepo(r) {
   return { id: r.id, name: r.name, full_name: 'lingyicute/' + r.name, html_url: 'https://github.com/lingyicute/' + r.name,
     description: r.description || null, fork: !!r.fork, archived: !!r.archived, language: r.language || null,
-    stars: r.stars || 0, forks: r.forks || 0, topics: Array.isArray(r.topics) ? r.topics : [],
+    stars: countValue(r.stars), forks: countValue(r.forks), topics: Array.isArray(r.topics) ? r.topics : [],
     created_at: r.created_at, pushed_at: r.pushed_at, homepage: r.homepage || null, license: r.license || null };
 }
 
@@ -2065,35 +2090,51 @@ async function fetchJSON(url, timeout) {
     return await r.json();
   } finally { clearTimeout(t); }
 }
+function checkRepo(r) {
+  if (!r || !Number.isSafeInteger(r.id) || typeof r.name !== 'string' || !r.name) throw new Error('Invalid repository');
+}
 function normGh(r) {
-  return { id: r.id, name: r.name, full_name: r.full_name, html_url: r.html_url, description: r.description,
-    fork: !!r.fork, archived: !!r.archived, language: r.language || null, stars: r.stargazers_count || 0,
-    forks: r.forks_count || 0, topics: r.topics || [], created_at: r.created_at, pushed_at: r.pushed_at,
-    homepage: r.homepage || null, license: r.license ? r.license.spdx_id : null };
+  checkRepo(r);
+  return { id: r.id, name: r.name, full_name: r.full_name || WHO + '/' + r.name, html_url: repoURL(r), description: r.description,
+    fork: typeof r.fork === 'boolean' ? r.fork : null, archived: !!r.archived, language: typeof r.language === 'string' ? r.language : null, stars: countValue(r.stargazers_count),
+    forks: countValue(r.forks_count), topics: Array.isArray(r.topics) ? r.topics.filter(t => typeof t === 'string') : [], created_at: r.created_at, pushed_at: r.pushed_at,
+    homepage: safeHttpURL(r.homepage, true) || null, license: r.license ? r.license.spdx_id : null };
 }
+const SNAP_BY_ID = new Map(SNAP.map(r => [r.id, snapRepo(r)]));
 function normMirror(r) {
-  return { id: r.id, name: r.name, full_name: r.repo, html_url: 'https://github.com/' + r.repo, description: r.description,
-    fork: false, archived: false, language: null, stars: r.stars || 0, forks: r.forks || 0, topics: [],
-    created_at: r.createdAt, pushed_at: r.pushedAt, homepage: null, license: null };
+  checkRepo(r);
+  const known = SNAP_BY_ID.get(r.id);
+  return { id: r.id, name: r.name, full_name: WHO + '/' + r.name, html_url: repoURL({ name: r.name }), description: r.description,
+    fork: known ? known.fork : null, archived: known ? known.archived : null,
+    language: known ? known.language : null, stars: countValue(r.stars), forks: countValue(r.forks),
+    topics: known ? known.topics : [], created_at: r.createdAt, pushed_at: r.pushedAt,
+    homepage: known ? known.homepage : null, license: known ? known.license : null };
 }
+function snapshotData() { return { user: USER, repos: SNAP.map(snapRepo), source: 'snapshot' }; }
 async function loadData() {
   try {
     const user = await fetchJSON(GH + '/users/' + WHO, GH_TIMEOUT_MS);
-    const repos = [];
-    for (let p = 1; p <= 3; p++) {
-      const chunk = await fetchJSON(GH + '/users/' + WHO + '/repos?per_page=100&sort=updated&page=' + p, GH_TIMEOUT_MS);
-      repos.push.apply(repos, chunk);
+    if (!user || user.login !== WHO) throw new Error('Invalid user');
+    const repos = [], seen = new Set();
+    for (let p = 1; ; p++) {
+      const chunk = await fetchJSON(GH + '/users/' + WHO + '/repos?per_page=100&sort=full_name&page=' + p, GH_TIMEOUT_MS);
+      if (!Array.isArray(chunk)) throw new Error('Invalid repository page');
+      let added = 0;
+      for (const r of chunk) {
+        checkRepo(r);
+        if (!seen.has(r.id)) { seen.add(r.id); repos.push(r); added++; }
+      }
       if (chunk.length < 100) break;
+      if (!added) throw new Error('Repeated repository page');
     }
-    if (!repos.length) throw 0;
-    return { user: user, repos: repos.map(normGh), source: 'live' };
+    return { user: Object.assign({}, USER, user), repos: repos.map(normGh), source: 'live' };
   } catch (e) {
     try {
       const d = await fetchJSON(UNGH + '/users/' + WHO + '/repos');
-      if (!d.repos || !d.repos.length) throw 0;
+      if (!d || !Array.isArray(d.repos)) throw new Error('Invalid mirror response');
       return { user: Object.assign({}, USER, { public_repos: d.repos.length }), repos: d.repos.map(normMirror), source: 'mirror' };
     } catch (e2) {
-      return { user: USER, repos: SNAP.map(snapRepo), source: 'snapshot' };
+      return snapshotData();
     }
   }
 }
@@ -2111,7 +2152,9 @@ const SEED_PRESETS = [
 ];
 
 let dark = (() => { const v = readLS(LS_DARK); if (v !== null) return v === '1'; return matchMedia('(prefers-color-scheme: dark)').matches; })();
-let seed = readLS(LS_SEED) || DEFAULT_SEED;
+const savedSeed = readLS(LS_SEED);
+let themeChosen = /^#[0-9a-f]{6}$/i.test(savedSeed || '');
+let seed = themeChosen ? savedSeed : DEFAULT_SEED;
 let animTimer = 0;
 function applyThemeAnim(animate) {
   if (animate && !REDUCED) {
@@ -2123,7 +2166,7 @@ function applyThemeAnim(animate) {
     applyTheme(seed, dark);
   }
 }
-function persistTheme() { writeLS(LS_DARK, dark ? '1' : '0'); writeLS(LS_SEED, seed); }
+function persistTheme() { themeChosen = true; writeLS(LS_DARK, dark ? '1' : '0'); writeLS(LS_SEED, seed); }
 /* 首帧前应用主题,杜绝闪烁 */
 applyTheme(seed, dark);
 
@@ -2149,12 +2192,15 @@ const countIO = new IntersectionObserver(entries => {
     const tick = t => {
       const p = Math.min(1, (t - t0) / dur), ease = 1 - Math.pow(1 - p, 4);
       el.textContent = Math.round(to * ease).toLocaleString('en-US');
-      if (p < 1) requestAnimationFrame(tick);
+      if (p < 1 && el.isConnected) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
   }
 }, { threshold: 0.3 });
 function attachCounts(root) { $$('.count', root).forEach(el => countIO.observe(el)); }
+function detachObservers(root) {
+  $$('.rv, .rv-lite, .donut, .count', root).forEach(el => { io.unobserve(el); countIO.unobserve(el); });
+}
 
 /* ================================================================
    8 · 全局状态
@@ -2167,12 +2213,13 @@ let extracting = false, panelOpen = false;
 let snackTimer = 0, snackOut = 0;
 function toast(msg) {
   const host = $('#snackHost');
-  host.innerHTML = '<div class="snack inv m3-shadow-2" role="status">' + ic('check', 16) + '<span>' + esc(msg) + '</span></div>';
+  host.innerHTML = '<div class="snack inv m3-shadow-2">' + ic('check', 16) + '<span>' + esc(msg) + '</span></div>';
   clearTimeout(snackTimer); clearTimeout(snackOut);
   snackTimer = setTimeout(() => {
     const el = host.firstElementChild;
     if (el) el.classList.add('out');
-    snackOut = setTimeout(() => { host.innerHTML = ''; }, 190);
+    snackOut = old.inert = true;
+      setTimeout(() => old.remove(), 190);
   }, 2100);
 }
 
@@ -2180,23 +2227,24 @@ function toast(msg) {
    9 · 渲染
 ================================================================ */
 function computeStats() {
-  let stars = 0, forks = 0, forksN = 0;
+  let stars = 0, forks = 0, forksN = 0, sourceN = 0;
   const map = new Map();
   for (const r of DATA.repos) {
     stars += r.stars; forks += r.forks;
-    if (r.fork) forksN++;
+    if (r.fork === true) forksN++;
+    if (r.fork === false) sourceN++;
     if (r.language) map.set(r.language, (map.get(r.language) || 0) + 1);
   }
   const langs = Array.from(map, ([name, count]) => ({ name: name, count: count, color: langColor(name) }))
     .sort((a, b) => b.count - a.count);
-  STATS = { stars: stars, forks: forks, forksN: forksN, langs: langs };
+  STATS = { stars: stars, forks: forks, forksN: forksN, sourceN: sourceN, langs: langs };
 }
 
 function filtered() {
   const q = query.trim().toLowerCase();
   let list = DATA.repos.filter(r => {
-    if (typeKey === 'source' && r.fork) return false;
-    if (typeKey === 'fork' && !r.fork) return false;
+    if (typeKey === 'source' && r.fork !== false) return false;
+    if (typeKey === 'fork' && r.fork !== true) return false;
     if (langKey && r.language !== langKey) return false;
     if (q) {
       const hay = (r.name + ' ' + (r.description || '') + ' ' + r.topics.join(' ')).toLowerCase();
@@ -2206,22 +2254,22 @@ function filtered() {
   });
   list = list.slice();
   if (sortKey === 'stars') list.sort((a, b) => b.stars - a.stars);
-  else if (sortKey === 'created') list.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+  else if (sortKey === 'created') list.sort((a, b) => dateValue(b.created_at) - dateValue(a.created_at));
   else if (sortKey === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
-  else list.sort((a, b) => +new Date(b.pushed_at) - +new Date(a.pushed_at));
+  else list.sort((a, b) => dateValue(b.pushed_at) - dateValue(a.pushed_at));
   return list;
 }
 function isFiltered() { return query !== '' || langKey !== null || typeKey !== 'all' || sortKey !== 'pushed'; }
 
 function maskText(text, base, extra) {
-  let out = '';
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i] === ' ' ? '&nbsp;' : esc(text[i]);
-    out += '<span class="ch" style="--d:' + (base + i * 34) + 'ms" aria-hidden="true">' + ch + '</span>';
-  }
-  /* extra(如 grad-text)必须落在 .rv-mask 自身:WebKit 的 background-clip:text
-     不会裁剪到后代 span 的文本,渐变加在父元素上会导致文字透明不可见 */
-  return '<span class="rv-mask' + (extra ? ' ' + extra : '') + '" aria-label="' + esc(text) + '">' + out + '</span>';
+  let index = 0;
+  // 按词分组，保留逐字动画与 WebKit 渐变修复，同时允许窄屏在词间换行。
+  const words = text.split(' ').map(word => {
+    const chars = Array.from(word, ch => '<span class="ch" style="--d:' + (base + index++ * 34) + 'ms">' + esc(ch) + '</span>').join('');
+    index++;
+    return '<span class="rv-mask' + (extra ? ' ' + extra : '') + '" aria-hidden="true">' + chars + '</span>';
+  });
+  return '<span aria-label="' + esc(text) + '">' + words.join(' ') + '</span>';
 }
 
 function donutHTML(langs) {
@@ -2251,13 +2299,14 @@ function donutHTML(langs) {
 }
 
 function renderHero() {
+  detachObservers($('#hero'));
   const u = DATA.user, n = DATA.repos.length;
-  $('#brandAvatar').src = u.avatar_url;
+  $('#brandAvatar').src = safeHttpURL(u.avatar_url) || USER.avatar_url;
   const tiles = [
     ['book', '公开仓库', n, 'pri-c', '-0.7deg'],
     ['star', '收获 Stars', STATS.stars, 'ter-c', '0.7deg'],
     ['fork', '被 Fork 次数', STATS.forks, 'sec-c', '-0.7deg'],
-    ['users', '关注者', u.followers, 'err-c', '0.7deg']
+    ['users', '关注者', countValue(u.followers), 'err-c', '0.7deg']
   ];
   let tilesHTML = '';
   tiles.forEach((t, i) => {
@@ -2274,15 +2323,15 @@ function renderHero() {
     '<span style="display:block">' + maskText('Open Source Gallery', 640, 'grad-text') + '</span></h1>' +
     '<p class="lead rv" style="--d:820ms">' + n + ' 个公开仓库正在发芽 —— 需要的话，拿去就好。</p>' +
     '<div class="meta-chips rv" style="--d:900ms">' +
-    '<span class="chip-info c-high chip">2016 年 7 月加入 GitHub</span>' +
+    '<span class="chip-info c-high chip">' + joinYear(u.created_at) + '加入 GitHub</span>' +
     '<span class="chip-info c-high chip">' + ic('book', 14) + ' ' + n + ' 仓库</span>' +
     '<span class="chip-info c-high chip">' + ic('star', 14) + ' ' + STATS.stars + ' Stars</span></div>' +
     '<div class="cta-row rv" style="--d:1000ms">' +
-    '<a class="btn pri state lift m3-shadow-1" href="' + u.html_url + '" target="_blank" rel="noopener noreferrer">' + ghIcon(20) + ' 访问 GitHub ' + ic('out', 16) + '</a>' +
+    '<a class="btn pri state lift m3-shadow-1" href="' + esc(safeHttpURL(u.html_url) || USER.html_url) + '" target="_blank" rel="noopener noreferrer">' + ghIcon(20) + ' 访问 GitHub ' + ic('out', 16) + '</a>' +
     '<a class="btn btn-txt state lift" href="#repos">浏览仓库 <span class="bob">' + ic('down', 16) + '</span></a>' +
     '</div></div>' +
     '<div class="hero-right"><div class="avatar-wrap pop-avatar"><div class="avatar-ring"></div>' +
-    '<div class="avatar-blob avatar-box c-lowest m3-shadow-2"><img class="avatar-blob" src="' + u.avatar_url + '" alt="lingyicute 的头像" /></div>' +
+    '<div class="avatar-blob avatar-box c-lowest m3-shadow-2"><img class="avatar-blob" src="' + esc(safeHttpURL(u.avatar_url) || USER.avatar_url) + '" alt="lingyicute 的头像" /></div>' +
     '<div class="float-chip floaty ter-c fc-star m3-shadow-1">' + ic('star', 14) + ' ' + STATS.stars + ' stars</div>' +
     '<div class="float-chip floaty sec-c fc-lang m3-shadow-1">' + ic('code', 14) + ' ' + (STATS.langs.length || '多') + ' 种语言</div>' +
     '</div><div class="tiles">' + tilesHTML + '</div></div></div>';
@@ -2291,31 +2340,32 @@ function renderHero() {
 }
 
 function renderTicker() {
-  const items = DATA.repos.slice().sort((a, b) => +new Date(b.pushed_at) - +new Date(a.pushed_at)).slice(0, 10);
-  if (!items.length) return;
+  const items = DATA.repos.slice().sort((a, b) => dateValue(b.pushed_at) - dateValue(a.pushed_at)).slice(0, 10);
+  if (!items.length) { $('#ticker').hidden = true; $('#ticker').replaceChildren(); return; }
   let track = '<span style="width:160px;flex-shrink:0" aria-hidden="true"></span>';
   for (const r of items) {
-    track += '<a class="tick-item" href="' + r.html_url + '" target="_blank" rel="noopener noreferrer">' +
+    track += '<a class="tick-item" href="' + esc(repoURL(r)) + '" target="_blank" rel="noopener noreferrer">' +
       '<span class="dot"></span><b>' + esc(r.name) + '</b><span>' + timeAgoZh(r.pushed_at) + '更新</span></a>';
   }
   const t = $('#ticker');
   t.innerHTML =
     '<span class="tick-badge pri-c m3-shadow-1"><span class="ping-dot"></span>' + ic('megaphone', 14) + ' 更新公告</span>' +
-    '<div class="tick-track"><div class="marquee"><div style="display:flex;gap:2.5rem;align-items:center">' + track + '</div><div style="display:flex;gap:2.5rem;align-items:center" aria-hidden="true">' + track + '</div></div></div>';
+    '<div class="tick-track"><div class="marquee"><div style="display:flex;gap:2.5rem;align-items:center">' + track + '</div><div style="display:flex;gap:2.5rem;align-items:center" aria-hidden="true" inert>' + track + '</div></div></div>';
   t.hidden = false;
 }
 
 function renderSpotlight() {
-  const pool0 = DATA.repos.filter(r => !r.fork);
+  detachObservers($('#spotlight'));
+  const pool0 = DATA.repos.filter(r => r.fork === false);
   const pool = pool0.length ? pool0 : DATA.repos.slice();
-  if (!pool.length) return;
+  if (!pool.length) { $('#spotlight').hidden = true; $('#spotlight').replaceChildren(); return; }
   const r = pool.reduce((b, x) => (x.stars > b.stars ? x : b), pool[0]);
   const s = $('#spotlight');
   s.innerHTML =
     '<div class="rv"><div class="spot pri-c lift">' +
     '<span class="spot-deco">' + ic('star', 260, true) + '</span><span class="spot-wm mono">01</span>' +
     '<div style="position:relative"><span class="spot-chip">' + ic('trophy', 14) + ' 最受欢迎（Maybe?）</span>' +
-    '<a class="spot-title" href="' + r.html_url + '" target="_blank" rel="noopener noreferrer"><h3>' + esc(r.name) + '<span class="ic">' + ic('out', 24) + '</span></h3></a>' +
+    '<a class="spot-title" href="' + esc(repoURL(r)) + '" target="_blank" rel="noopener noreferrer"><h3>' + esc(r.name) + '<span class="ic">' + ic('out', 24) + '</span></h3></a>' +
     (r.description ? '<p class="spot-desc">' + esc(r.description) + '</p>' : '') +
     '<div class="spot-meta">' +
     (r.language ? '<span><span class="dot" style="width:10px;height:10px;border-radius:999px;background:' + langColor(r.language) + ';display:inline-block"></span> ' + esc(r.language) + '</span>' : '') +
@@ -2323,8 +2373,8 @@ function renderSpotlight() {
     '<span>' + ic('fork', 14) + ' ' + r.forks + ' Forks</span>' +
     '<span class="dim">更新于 ' + timeAgoZh(r.pushed_at) + '</span></div>' +
     '<div class="spot-actions">' +
-    '<a class="btn pri state lift m3-shadow-1" style="height:48px" href="' + r.html_url + '" target="_blank" rel="noopener noreferrer">打开项目 ' + ic('out', 16) + '</a>' +
-    '<button class="btn btn-ghost lift" style="height:48px" data-copy="' + r.html_url + '.git">' + ic('copy', 16) + ' 复制克隆地址</button>' +
+    '<a class="btn pri state lift m3-shadow-1" style="height:48px" href="' + esc(repoURL(r)) + '" target="_blank" rel="noopener noreferrer">打开项目 ' + ic('out', 16) + '</a>' +
+    '<button class="btn btn-ghost lift" style="height:48px" data-copy="' + esc(repoURL(r)) + '.git">' + ic('copy', 16) + ' 复制克隆地址</button>' +
     '</div></div></div></div>';
   s.hidden = false;
   attachReveals(s);
@@ -2346,7 +2396,7 @@ const SEG_DEFS = {
 };
 function segHints(k) {
   const total = DATA.repos.length;
-  if (k === 'type') return [total, total - STATS.forksN, STATS.forksN];
+  if (k === 'type') return [total, STATS.sourceN, STATS.forksN];
   return [null, null, null, null];
 }
 function renderSegs() {
@@ -2354,13 +2404,14 @@ function renderSegs() {
     const key = cfg[0], el = $(cfg[1]), cur = cfg[2], hints = segHints(key);
     let html = '<span class="seg-pill" aria-hidden="true" style="opacity:0"></span>';
     SEG_DEFS[key].forEach((o, i) => {
-      html += '<button data-v="' + o[0] + '"' + (o[0] === cur ? ' data-active' : '') + '><span>' + ic(o[2], 14) + ' ' + o[1] +
+      html += '<button aria-pressed="' + (o[0] === cur) + '" data-v="' + o[0] + '"' + (o[0] === cur ? ' data-active' : '') + '><span>' + ic(o[2], 14) + ' ' + o[1] +
         (hints[i] !== null ? '<span class="hint">' + hints[i] + '</span>' : '') + '</span></button>';
     });
     el.innerHTML = html;
     $$('button', el).forEach(b => b.addEventListener('click', () => {
       cfg[3](b.dataset.v);
       renderSegs();
+      $(cfg[1]).querySelector('[data-active]').focus({ preventScroll: true });
       renderGrid();
     }));
   });
@@ -2379,11 +2430,11 @@ function placePills() {
 function renderChips() {
   const el = $('#langChips');
   if (!STATS.langs.length) { el.innerHTML = ''; return; }
-  let html = '<button class="lg-chip chip ' + (langKey === null ? 'sec-c' : 'off state') + '" data-lang="">' +
+  let html = '<button class="lg-chip chip ' + (langKey === null ? 'sec-c' : 'off state') + '" data-lang="" aria-pressed="' + (langKey === null) + '">' +
     (langKey === null ? ic('check', 14) : '') + ' 全部语言</button>';
-  STATS.langs.slice(0, 14).forEach(l => {
+  STATS.langs.forEach(l => {
     const on = langKey === l.name;
-    html += '<button class="lg-chip chip ' + (on ? 'sec-c' : 'off state') + '" data-lang="' + esc(l.name) + '">' +
+    html += '<button class="lg-chip chip ' + (on ? 'sec-c' : 'off state') + '" data-lang="' + esc(l.name) + '" aria-pressed="' + on + '">' +
       (on ? ic('check', 14) : '<span class="dot" style="background:' + l.color + '"></span>') + ' ' + esc(l.name) +
       '<span class="n">' + l.count + '</span></button>';
   });
@@ -2392,12 +2443,15 @@ function renderChips() {
     const v = b.dataset.lang;
     langKey = v === '' || v === langKey ? null : v;
     renderChips();
+    $$('#langChips button').find(x => x.dataset.lang === v).focus({ preventScroll: true });
     renderGrid();
   }));
 }
 
 function cardHTML(r, i) {
+  const homepage = safeHttpURL(r.homepage, true);
   let badges = '';
+  if (r.fork === null) badges += '<span class="badge dim">类型未知</span>';
   if (r.fork) badges += '<span class="badge dim">' + ic('fork', 12) + ' Fork</span>';
   if (r.archived) badges += '<span class="badge err-c">' + ic('archive', 12) + ' 已归档</span>';
   if (r.license) badges += '<span class="badge dim">' + ic('tag', 12) + ' ' + esc(r.license) + '</span>';
@@ -2405,7 +2459,7 @@ function cardHTML(r, i) {
   r.topics.slice(0, 3).forEach(t => { topics += '<span class="topic">' + esc(t) + '</span>'; });
   if (r.topics.length > 3) topics += '<span class="topic-more">+' + (r.topics.length - 3) + '</span>';
   return '<div class="rv-lite" style="--d:' + Math.min(i * 26, 416) + 'ms">' +
-    '<article class="card" tabindex="0" role="link" data-url="' + r.html_url + '" aria-label="打开仓库 ' + esc(r.full_name) + '">' +
+    '<article class="card" tabindex="0" role="link" data-url="' + esc(repoURL(r)) + '" aria-label="打开仓库 ' + esc(r.full_name) + '">' +
     '<span class="card-go">' + ic('out', 20) + '</span>' +
     '<div class="card-head"><span class="card-ic ' + (r.fork ? 'fork' : 'sec-c') + '">' + ic(r.fork ? 'fork' : 'book', 18) + '</span>' +
     '<h3 class="card-name">' + esc(r.name) + '</h3></div>' +
@@ -2418,13 +2472,14 @@ function cardHTML(r, i) {
     (r.forks > 0 ? '<span>' + ic('fork', 14) + ' ' + r.forks + '</span>' : '') +
     '<span>' + ic('clock', 14) + ' ' + timeAgoZh(r.pushed_at) + '</span>' +
     '<span class="card-actions">' +
-    (r.homepage ? '<a class="ico-btn state" href="' + (/^https?:\/\//i.test(r.homepage) ? r.homepage : 'https://' + r.homepage) + '" target="_blank" rel="noopener noreferrer" aria-label="打开项目主页">' + ic('globe', 16) + '</a>' : '') +
-    '<button class="ico-btn state" data-copy="' + r.html_url + '.git" aria-label="复制克隆地址">' + ic('copy', 16) + '</button>' +
+    (homepage ? '<a class="ico-btn state" href="' + esc(homepage) + '" target="_blank" rel="noopener noreferrer" aria-label="打开项目主页">' + ic('globe', 16) + '</a>' : '') +
+    '<button class="ico-btn state" data-copy="' + esc(repoURL(r)) + '.git" aria-label="复制克隆地址">' + ic('copy', 16) + '</button>' +
     '</span></div></article></div>';
 }
 
 function renderGrid() {
   const list = filtered(), grid = $('#grid');
+  detachObservers(grid);
   if (!list.length) {
     grid.innerHTML = '<div class="empty c-low pop" style="grid-column:1/-1">' +
       '<span class="empty-ic sec-c">' + ic('searchx', 36) + '</span>' +
@@ -2441,13 +2496,15 @@ function renderGrid() {
 }
 
 function renderSourceChip() {
-  const m = { live: ['实时数据', 'ter-c', 'radio'], mirror: ['镜像数据', 'sec-c', 'cloudoff'], snapshot: ['本地快照', 'err-c', 'database'] }[DATA.source];
+  const m = { live: ['实时数据', 'ter-c', 'radio'], mirror: ['镜像 + 快照', 'sec-c', 'cloudoff'], snapshot: ['快照 09-22', 'err-c', 'database'] }[DATA.source];
   const c = $('#srcChip');
   c.className = 'src-chip ' + m[1];
+  c.title = DATA.source === 'mirror' ? '镜像计数；用户资料和已知仓库元数据来自 2026-09-22 快照，新增仓库类型未知' : DATA.source === 'snapshot' ? '离线快照：2026-09-22，非实时数据' : 'GitHub API 数据';
   c.innerHTML = ic(m[2], 14) + ' ' + m[0] + ' <span class="n">· ' + DATA.repos.length + '</span>';
 }
 
 function renderAll() {
+  if (langKey && !STATS.langs.some(l => l.name === langKey)) langKey = null;
   renderHero();
   renderTicker();
   renderSpotlight();
@@ -2461,14 +2518,21 @@ function renderAll() {
    10 · 交互
 ================================================================ */
 /* 取色面板 */
+let panelReturnFocus = null;
+function setPanelBackground(inert) {
+  $$('.topbar, main, .footer, #fabTop').forEach(el => { el.inert = inert; });
+  $('[data-act="palette"]').setAttribute('aria-expanded', String(inert));
+}
 function renderPanel() {
   const host = $('#panelHost');
   if (!panelOpen) {
     const old = host.firstElementChild;
     $('#scrim').hidden = true;
+    setPanelBackground(false);
     if (old) {
       old.classList.add('out');
-      setTimeout(() => { host.innerHTML = ''; }, 190);
+      old.inert = true;
+      setTimeout(() => old.remove(), 190);
     }
     return;
   }
@@ -2479,12 +2543,14 @@ function renderPanel() {
       (on ? ic('check', 16) : '') + '</button>';
   });
   host.innerHTML =
-    '<div class="panel popover c-high m3-shadow-3" role="dialog" aria-label="动态取色面板">' +
-    '<p class="panel-k">MATERIAL YOU</p><h3>动态取色</h3>' +
+    '<div class="panel popover c-high m3-shadow-3" role="dialog" aria-modal="true" aria-label="动态取色面板">' +
+    '<button class="icon-btn state panel-close" data-act="closepanel" aria-label="关闭配色面板">' + ic('x', 18) + '</button><p class="panel-k">MATERIAL YOU</p><h3>动态取色</h3>' +
     '<div class="swatches">' + sw + '</div>' +
     '<button class="panel-wide sec-c state lift" data-act="extract" id="panelExtract">' + ic('wand', 16) + ' 使用我的头像主题色</button>' +
     '<p class="panel-note">' + ic('image', 14) + '<span>与 Android 壁纸取色同源的调色方案</span></p></div>';
   $('#scrim').hidden = false;
+  setPanelBackground(true);
+  $('button', host).focus({ preventScroll: true });
   $$('[data-seed]', host).forEach(b => b.addEventListener('click', () => {
     seed = b.dataset.seed;
     persistTheme();
@@ -2497,8 +2563,28 @@ function renderPanel() {
     });
   }));
 }
-function togglePanel() { panelOpen = !panelOpen; renderPanel(); }
-function closePanel() { if (panelOpen) { panelOpen = false; renderPanel(); } }
+function togglePanel() {
+  if (panelOpen) { closePanel(); return; }
+  panelReturnFocus = document.activeElement;
+  panelOpen = true;
+  renderPanel();
+}
+function closePanel() {
+  if (!panelOpen) return;
+  panelOpen = false;
+  renderPanel();
+  if (panelReturnFocus && panelReturnFocus.isConnected) panelReturnFocus.focus({ preventScroll: true });
+}
+document.addEventListener('keydown', e => {
+  if (!panelOpen) return;
+  if (e.key === 'Escape') { e.preventDefault(); closePanel(); }
+  if (e.key === 'Tab') {
+    const buttons = $$('#panelHost button:not([disabled])');
+    const first = buttons[0], last = buttons[buttons.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
 
 /* 从头像取色 */
 async function extractAvatar() {
@@ -2527,20 +2613,29 @@ async function extractAvatar() {
 }
 
 /* 复制 */
-function copyText(t) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(t).catch(() => fallbackCopy(t));
-  } else fallbackCopy(t);
+async function copyText(t) {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(t);
+      return true;
+    }
+  } catch (e) { /* 尝试兼容路径 */ }
+  return fallbackCopy(t);
 }
 function fallbackCopy(t) {
+  const focus = document.activeElement;
   const ta = document.createElement('textarea');
-  ta.value = t; document.body.appendChild(ta); ta.select();
-  try { document.execCommand('copy'); } catch (e) {}
-  ta.remove();
+  ta.value = t;
+  ta.readOnly = true;
+  ta.style.cssText = 'position:fixed;left:-9999px;top:0';
+  document.body.appendChild(ta); ta.select();
+  try { return document.execCommand('copy'); }
+  catch (e) { return false; }
+  finally { ta.remove(); if (focus && focus.isConnected) focus.focus({ preventScroll: true }); }
 }
 
 /* 全局事件委托 */
-document.addEventListener('click', e => {
+document.addEventListener('click', async e => {
   const act = e.target.closest('[data-act]');
   if (act) {
     const a = act.dataset.act;
@@ -2553,7 +2648,11 @@ document.addEventListener('click', e => {
   const cp = e.target.closest('[data-copy]');
   if (cp) {
     e.stopPropagation();
-    copyText(cp.dataset.copy);
+    if (cp.disabled) return;
+    cp.disabled = true;
+    const copied = await copyText(cp.dataset.copy);
+    cp.disabled = false;
+    if (!copied) { toast('复制失败，请手动复制项目地址'); return; }
     if (cp.tagName === 'BUTTON') {
       const old = cp.innerHTML;
       cp.innerHTML = ic('check', 16);
@@ -2563,6 +2662,7 @@ document.addEventListener('click', e => {
   }
 });
 function resetFilters() {
+  clearTimeout(searchTimer);
   query = ''; langKey = null; typeKey = 'all'; sortKey = 'pushed';
   const si = $('#searchInput'); si.value = '';
   $('#searchBox').classList.remove('has-q');
@@ -2592,6 +2692,7 @@ $('#searchInput').addEventListener('input', e => {
   searchTimer = setTimeout(() => { query = v; if (DATA) renderGrid(); }, 140);
 });
 $('#clearSearch').addEventListener('click', () => {
+  clearTimeout(searchTimer);
   const si = $('#searchInput');
   si.value = '';
   $('#searchBox').classList.remove('has-q');
@@ -2602,16 +2703,44 @@ $('#clearSearch').addEventListener('click', () => {
 
 /* 刷新 */
 $('#refreshBtn').innerHTML = ic('refresh', 18);
-$('#refreshBtn').addEventListener('click', () => {
+let refreshTask = null;
+function refreshData(notify = true) {
+  if (refreshTask) return refreshTask;
   const b = $('#refreshBtn');
+  b.disabled = true;
   b.innerHTML = '<span class="spin" style="display:flex">' + ic('loader', 18) + '</span>';
-  loadData().then(d => {
-    DATA = d; computeStats();
-    b.innerHTML = ic('refresh', 18);
-    renderAll();
-    toast('数据已刷新');
-  });
-});
+  refreshTask = (async () => {
+    try {
+      const d = await loadData();
+      // 网络失败不应把当前已取得的实时数据回滚成旧快照。
+      if (d.source !== 'snapshot' || !DATA || DATA.source === 'snapshot') {
+        const active = document.activeElement;
+        const focusKey = active && { id: active.id, copy: active.dataset.copy, url: active.dataset.url,
+          value: active.dataset.v, segment: active.closest('.seg')?.id, lang: active.dataset.lang };
+        DATA = d; computeStats(); renderAll();
+        if (active && !active.isConnected && focusKey) {
+          const next = (focusKey.id && document.getElementById(focusKey.id)) ||
+            $$('[data-copy], [data-url], [data-v], [data-lang]').find(el =>
+              (focusKey.copy && el.dataset.copy === focusKey.copy) ||
+              (focusKey.url && el.dataset.url === focusKey.url) ||
+              (focusKey.segment && el.closest('.seg')?.id === focusKey.segment && el.dataset.v === focusKey.value) ||
+              (focusKey.lang !== undefined && el.dataset.lang === focusKey.lang));
+          (next || $('#searchInput')).focus({ preventScroll: true });
+        }
+      }
+      if (notify) toast(d.source === 'live' ? '已获取 GitHub 最新数据' : d.source === 'mirror' ? '已加载镜像，部分信息来自快照' : '网络不可用，保留当前数据');
+    } catch (e) {
+      console.error('刷新失败', e);
+      if (notify) toast('刷新失败，保留当前数据');
+    } finally {
+      b.disabled = false;
+      b.innerHTML = ic('refresh', 18);
+      refreshTask = null;
+    }
+  })();
+  return refreshTask;
+}
+$('#refreshBtn').addEventListener('click', () => refreshData());
 
 /* 深浅色切换 */
 function renderDarkBtn() {
@@ -2670,15 +2799,18 @@ function whenFontsReady() {
   return document.fonts && document.fonts.ready ? document.fonts.ready.catch(() => {}) : Promise.resolve();
 }
 function whenImagesReady(root) {
-  const images = $$('img', root);
-  return Promise.all(images.map(img => {
-    if (img.complete) return img.decode ? img.decode().catch(() => {}) : Promise.resolve();
-    return new Promise(resolve => {
-      const done = () => resolve();
-      img.addEventListener('load', done, { once: true });
-      img.addEventListener('error', done, { once: true });
-    });
-  }));
+  return Promise.all($$('img', root).map(img => new Promise(resolve => {
+    const done = () => {
+      img.removeEventListener('load', done);
+      img.removeEventListener('error', done);
+      // 动态插入的头像不仅要下载完成，也要完成解码后再揭开加载层。
+      const decoded = img.naturalWidth && img.decode ? img.decode().catch(() => {}) : Promise.resolve();
+      decoded.then(resolve);
+    };
+    if (img.complete) { done(); return; }
+    img.addEventListener('load', done, { once: true });
+    img.addEventListener('error', done, { once: true });
+  })));
 }
 function releasePageLoader() {
   const loader = $('#pageLoader');
@@ -2692,25 +2824,23 @@ function releasePageLoader() {
 async function bootPage() {
   let d;
   try {
+    // 加载层是入场设计：数据、页面资源与字体就绪前，不展示半成品。
     [d] = await Promise.all([loadData(), whenWindowLoaded(), whenFontsReady()]);
   } catch (e) {
-    /* 数据管道本身有兜底；这里再保留一层保护，避免加载层卡住 */
     console.error('页面初始化失败,使用本地快照', e);
-    d = { user: USER, repos: SNAP.map(snapRepo), source: 'snapshot' };
+    d = snapshotData();
   }
-
   DATA = d;
   computeStats();
   renderAll();
 
-  /* Material You 时刻:首次访问从头像取色(已有记忆偏好则跳过) */
-  const autoSeed = !readLS(LS_SEED)
-    ? seedFromImage(d.user.avatar_url).then(c => {
-        if (c && !readLS(LS_SEED)) { seed = c; applyThemeAnim(true); }
+  const autoSeed = !themeChosen
+    ? seedFromImage(d.user.avatar_url, 0).then(c => {
+        if (c && !themeChosen) { seed = c; applyThemeAnim(true); }
       })
     : Promise.resolve();
 
-  /* 动态渲染出的头像也要完成解码，确保放行时不再出现半成品 */
+  // 再等待动态内容触发的字体、头像解码及首次取色，不以计时器强制放行。
   await Promise.all([whenFontsReady(), whenImagesReady(document), autoSeed]);
   await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   releasePageLoader();
