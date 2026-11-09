@@ -6,10 +6,11 @@
  *   SNAP_TZ=America/Los_Angeles node update-snapshot.mjs   # 指定其它时区
  */
 import { readFileSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const WHO = 'lingyicute';
 const GH = 'https://api.github.com';
-const FILE = new URL('./repoGallery/index.html', import.meta.url).pathname;
+const FILE = fileURLToPath(new URL('./index.html', import.meta.url));
 
 /* ---------- 1. 计算快照日期(自动) ---------- */
 const TIMEZONE = process.env.SNAP_TZ || 'Asia/Shanghai'; 
@@ -31,7 +32,9 @@ const TODAY_SHORT = TODAY.slice(5); // MM-DD
 
 /* ---------- 2. 拉取实时数据 ---------- */
 async function fetchJSON(url) {
-  const r = await fetch(url, { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'snapshot-updater' } });
+  const headers = { Accept: 'application/vnd.github+json', 'User-Agent': 'snapshot-updater' };
+  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`; // 提高 API 速率限制
+  const r = await fetch(url, { headers });
   if (!r.ok) throw new Error(`${r.status} for ${url}`);
   return r.json();
 }
