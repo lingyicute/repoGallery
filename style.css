@@ -27,11 +27,13 @@
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 [hidden] { display:none!important; }
 html { scroll-behavior:smooth; scroll-padding-top:80px; }
+/* 底色与文字色只在 .theme-anim 期间过渡(见下方)。启动时骨架屏往往已按基线变量完成一次样式计算,
+   动态主题一旦写入,常驻过渡会让 color 这类继承属性连续 0.5s 逐帧重算整棵文档树并整屏重绘;
+   减少动态效果时也应直接切换,不该再有半秒渐变。 */
 body {
   font-family:"Nebulove","Noto Sans SC","Plus Jakarta Sans",system-ui,-apple-system,sans-serif;
   background:var(--md-surface); color:var(--md-on-surface);
   overflow-x:clip; line-height:1.5;
-  transition:background-color .5s var(--e), color .5s var(--e);
 }
 img { display:block; max-width:100%; }
 
