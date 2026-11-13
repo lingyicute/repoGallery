@@ -250,6 +250,14 @@ async function checkRefresh(browser, base) {
   });
   assert.deepEqual([cards.total, cards.wrappersLost, cards.articlesLost, cards.edited, cards.added], [0, 0, 0, 1, 1]);
   assert.deepEqual(cards.names, cards.expected);
+  // Switching a segment updates it in place so its indicator can slide.
+  assert(await page.evaluate(() => {
+    const pill = document.querySelector('#segSort .seg-pill'), button = document.querySelector('#segSort button[data-v="name"]');
+    const chip = document.querySelector('#langChips button[data-lang=""]');
+    button.click(); chip.click();
+    return pill.isConnected && button.isConnected && chip.isConnected && button.hasAttribute('data-active') &&
+      button.getAttribute('aria-pressed') === 'true' && document.querySelectorAll('#segSort [data-active]').length === 1;
+  }));
   // Looping decorations only run while their section is on screen.
   const playState = sel => page.evaluate(s => getComputedStyle(document.querySelector(s)).animationPlayState, sel);
   assert.equal(await playState('#hero .avatar-blob'), 'running');

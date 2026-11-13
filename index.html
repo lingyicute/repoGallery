@@ -2801,23 +2801,33 @@ function segHints(k) {
   return [null, null, null, null];
 }
 function renderSegs() {
-  [['type', '#segType', typeKey, v => { typeKey = v; }], ['sort', '#segSort', sortKey, v => { sortKey = v; }]].forEach(cfg => {
+  [['type', '#segType', typeKey], ['sort', '#segSort', sortKey]].forEach(cfg => {
     const key = cfg[0], el = $(cfg[1]), cur = cfg[2], hints = segHints(key);
     let html = '<span class="seg-pill" aria-hidden="true" style="opacity:0"></span>';
     SEG_DEFS[key].forEach((o, i) => {
-      html += '<button aria-pressed="' + (o[0] === cur) + '" data-v="' + o[0] + '"' + (o[0] === cur ? ' data-active' : '') + '><span>' + ic(o[2], 14) + ' ' + o[1] +
+      html += '<button data-v="' + o[0] + '"><span>' + ic(o[2], 14) + ' ' + o[1] +
         (hints[i] !== null ? '<span class="hint">' + hints[i] + '</span>' : '') + '</span></button>';
     });
-    el.innerHTML = html;
-    $$('button', el).forEach(b => b.addEventListener('click', () => {
-      cfg[3](b.dataset.v);
-      renderSegs();
-      $(cfg[1]).querySelector('[data-active]').focus({ preventScroll: true });
-      renderGrid();
-    }));
+    // 按钮只在计数变化时重建；切换选中项时原地更新，指示器得以从旧位置滑到新位置。
+    swapHTML(el, html);
+    for (const b of el.querySelectorAll('button')) {
+      const on = b.dataset.v === cur;
+      b.setAttribute('aria-pressed', on);
+      b.toggleAttribute('data-active', on);
+    }
   });
   schedulePills();
 }
+// 事件委托：控件重建或更新后无需逐个重新绑定监听器。
+[['#segType', v => { typeKey = v; }], ['#segSort', v => { sortKey = v; }]].forEach(cfg => {
+  $(cfg[0]).addEventListener('click', e => {
+    const b = e.target.closest('button[data-v]');
+    if (!b) return;
+    cfg[1](b.dataset.v);
+    renderSegs();
+    renderGrid();
+  });
+});
 let pillFrame = 0;
 function schedulePills() {
   if (pillFrame) return;
@@ -2838,7 +2848,7 @@ function placePills() {
 
 function renderChips() {
   const el = $('#langChips');
-  if (!STATS.langs.length) { el.innerHTML = ''; return; }
+  if (!STATS.langs.length) { swapHTML(el, ''); return; }
   let html = '<button class="lg-chip chip ' + (langKey === null ? 'sec-c' : 'off state') + '" data-lang="" aria-pressed="' + (langKey === null) + '">' +
     (langKey === null ? ic('check', 14) : '') + ' 全部语言</button>';
   STATS.langs.forEach(l => {
@@ -2847,15 +2857,17 @@ function renderChips() {
       (on ? ic('check', 14) : '<span class="dot" style="background:' + l.color + '"></span>') + ' ' + esc(l.name) +
       '<span class="n">' + l.count + '</span></button>';
   });
-  el.innerHTML = html;
-  $$('button', el).forEach(b => b.addEventListener('click', () => {
-    const v = b.dataset.lang;
-    langKey = v === '' || v === langKey ? null : v;
-    renderChips();
-    $$('#langChips button').find(x => x.dataset.lang === v).focus({ preventScroll: true });
-    renderGrid();
-  }));
+  swapHTML(el, html);
 }
+$('#langChips').addEventListener('click', e => {
+  const b = e.target.closest('button[data-lang]');
+  if (!b) return;
+  const v = b.dataset.lang;
+  langKey = v === '' || v === langKey ? null : v;
+  renderChips();
+  $$('#langChips button').find(x => x.dataset.lang === v).focus({ preventScroll: true });
+  renderGrid();
+});
 
 function cardHTML(r) {
   const homepage = safeHttpURL(r.homepage, true);
