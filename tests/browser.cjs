@@ -196,6 +196,8 @@ async function checkGrid(browser, base) {
     return { width: outer.width, height: outer.height, metaBottom: meta.bottom, cardBottom: outer.bottom, visibility: getComputedStyle(card).contentVisibility };
   });
   assert(dimensions.width > 200 && dimensions.height > 80);
+  // Cards revealed by scrolling are staggered within their batch instead of waiting for the cap.
+  assert(await last.evaluate(card => parseFloat(card.parentElement.style.getPropertyValue('--d')) < 416));
   assert(dimensions.metaBottom <= dimensions.cardBottom + 1, 'card contents must not be clipped by the size estimate');
   await page.keyboard.press('Tab');
   assert(await page.evaluate(() => document.activeElement.closest('.card') === Array.from(document.querySelectorAll('#grid > .rv-lite .card')).at(-1)));
