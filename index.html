@@ -2552,6 +2552,15 @@ function attachCounts(root) { $$('.count', root).forEach(el => countIO.observe(e
 function detachObservers(root) {
   $$('.rv, .rv-lite, .donut, .count', root).forEach(el => { io.unobserve(el); countIO.unobserve(el); });
 }
+// 内容未变时保留现有节点：刷新数据不必重建 DOM，也不会重播入场动画。
+const renderedHTML = new WeakMap();
+function swapHTML(el, html) {
+  if (renderedHTML.get(el) === html) return false;
+  detachObservers(el);
+  el.innerHTML = html;
+  renderedHTML.set(el, html);
+  return true;
+}
 
 /* ================================================================
    8 · 全局状态
@@ -2663,9 +2672,10 @@ function donutHTML(langs) {
 }
 
 function renderHero() {
-  detachObservers($('#hero'));
+  const hero = $('#hero'), brand = $('#brandAvatar');
   const u = DATA.user, n = DATA.repos.length;
-  $('#brandAvatar').src = safeHttpURL(u.avatar_url) || USER.avatar_url;
+  const avatar = safeHttpURL(u.avatar_url) || USER.avatar_url;
+  if (brand.src !== avatar) brand.src = avatar;
   const tiles = [
     ['book', '公开仓库', n, 'pri-c', '-0.7deg'],
     ['star', '收获 Stars', STATS.stars, 'ter-c', '0.7deg'],
@@ -2680,7 +2690,7 @@ function renderHero() {
   });
   if (STATS.langs.length >= 2) tilesHTML += donutHTML(STATS.langs);
 
-  $('#hero').innerHTML =
+  const html =
     '<div class="hero-grid"><div>' +
     '<div class="rv" style="--d:120ms"><span class="eyebrow sec-c">' + ic('sparkles', 14) + 'Made with Love</span></div>' +
     '<h1 class="h1 rv" style="--d:0ms"><span style="display:block">' + maskText('lingyicute\'s', 280) + '</span> ' +
@@ -2699,33 +2709,33 @@ function renderHero() {
     '<div class="float-chip floaty ter-c fc-star m3-shadow-1">' + ic('star', 14) + ' ' + STATS.stars + ' stars</div>' +
     '<div class="float-chip floaty sec-c fc-lang m3-shadow-1">' + ic('code', 14) + ' ' + (STATS.langs.length || '多') + ' 种语言</div>' +
     '</div><div class="tiles">' + tilesHTML + '</div></div></div>';
-  attachReveals($('#hero'));
-  attachCounts($('#hero'));
+  if (!swapHTML(hero, html)) return;
+  attachReveals(hero);
+  attachCounts(hero);
 }
 
 function renderTicker() {
   const items = DATA.repos.slice().sort((a, b) => dateValue(b.pushed_at) - dateValue(a.pushed_at)).slice(0, 10);
-  if (!items.length) { $('#ticker').hidden = true; $('#ticker').replaceChildren(); return; }
+  const t = $('#ticker');
+  if (!items.length) { t.hidden = true; swapHTML(t, ''); return; }
   let track = '<span style="width:160px;flex-shrink:0" aria-hidden="true"></span>';
   for (const r of items) {
     track += '<a class="tick-item" href="' + esc(repoURL(r)) + '" target="_blank" rel="noopener noreferrer">' +
       '<span class="dot"></span><b>' + esc(r.name) + '</b><span>' + timeAgoZh(r.pushed_at) + '更新</span></a>';
   }
-  const t = $('#ticker');
-  t.innerHTML =
+  swapHTML(t,
     '<span class="tick-badge pri-c m3-shadow-1"><span class="ping-dot"></span>' + ic('megaphone', 14) + ' 更新公告</span>' +
-    '<div class="tick-track"><div class="marquee"><div style="display:flex;gap:2.5rem;align-items:center">' + track + '</div><div style="display:flex;gap:2.5rem;align-items:center" aria-hidden="true" inert>' + track + '</div></div></div>';
+    '<div class="tick-track"><div class="marquee"><div style="display:flex;gap:2.5rem;align-items:center">' + track + '</div><div style="display:flex;gap:2.5rem;align-items:center" aria-hidden="true" inert>' + track + '</div></div></div>');
   t.hidden = false;
 }
 
 function renderSpotlight() {
-  detachObservers($('#spotlight'));
+  const s = $('#spotlight');
   const pool0 = DATA.repos.filter(r => r.fork === false);
   const pool = pool0.length ? pool0 : DATA.repos.slice();
-  if (!pool.length) { $('#spotlight').hidden = true; $('#spotlight').replaceChildren(); return; }
+  if (!pool.length) { s.hidden = true; swapHTML(s, ''); return; }
   const r = pool.reduce((b, x) => (x.stars > b.stars ? x : b), pool[0]);
-  const s = $('#spotlight');
-  s.innerHTML =
+  const changed = swapHTML(s,
     '<div class="rv"><div class="spot pri-c lift">' +
     '<span class="spot-deco">' + ic('star', 260, true) + '</span><span class="spot-wm mono">01</span>' +
     '<div style="position:relative"><span class="spot-chip">' + ic('trophy', 14) + ' 最受欢迎（Maybe?）</span>' +
@@ -2739,9 +2749,9 @@ function renderSpotlight() {
     '<div class="spot-actions">' +
     '<a class="btn pri state lift m3-shadow-1" style="height:48px" href="' + esc(repoURL(r)) + '" target="_blank" rel="noopener noreferrer">打开项目 ' + ic('out', 16) + '</a>' +
     '<button class="btn btn-ghost lift" style="height:48px" data-copy="' + esc(repoURL(r)) + '.git">' + ic('copy', 16) + ' 复制克隆地址</button>' +
-    '</div></div></div></div>';
+    '</div></div></div></div>');
   s.hidden = false;
-  attachReveals(s);
+  if (changed) attachReveals(s);
 }
 
 /* 分段控件 */
