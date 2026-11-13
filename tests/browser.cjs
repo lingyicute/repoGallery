@@ -118,7 +118,12 @@ async function benchmark(page) {
       t = performance.now(); sortKey = key; renderGrid(); document.body.offsetHeight;
       sortMs.push(performance.now() - t);
     }
-    return { repositories: many.length, initialMs, filterMs, sortMs, height: document.body.scrollHeight };
+    // A background refresh that delivers equal data should not rebuild the page.
+    t = performance.now();
+    DATA = { ...DATA, repos: many.map(r => ({ ...r })) };
+    computeStats(); renderAll(); document.body.offsetHeight;
+    const refreshMs = performance.now() - t;
+    return { repositories: many.length, initialMs, filterMs, sortMs, refreshMs, height: document.body.scrollHeight };
   });
   const after = await session.send('Performance.getMetrics');
   const metric = (metrics, name) => metrics.metrics.find(m => m.name === name)?.value ?? 0;
@@ -205,6 +210,28 @@ async function checkGrid(browser, base) {
   await run.context.close();
 }
 
+async function checkRefresh(browser, base) {
+  const run = await newPage(browser, base, { apiDelay: 120, reducedMotion: 'no-preference' });
+  const page = run.page;
+  await page.goto(base, { waitUntil: 'commit' });
+  await page.waitForFunction(() => !document.body.hasAttribute('aria-busy'));
+  // Equal data must keep the rendered sections instead of replaying their entrance.
+  const result = await page.evaluate(() => {
+    const sections = ['#hero', '#ticker', '#spotlight'].map(sel => document.querySelector(sel));
+    const before = sections.map(el => el.firstElementChild);
+    DATA = { ...DATA, repos: DATA.repos.map(r => ({ ...r })) };
+    computeStats(); renderAll();
+    const kept = sections.map((el, i) => el.firstElementChild === before[i]);
+    DATA = { ...DATA, user: { ...DATA.user, followers: DATA.user.followers + 1 } };
+    computeStats(); renderAll();
+    return { kept, heroUpdated: sections[0].firstElementChild !== before[0], tickerKept: sections[1].firstElementChild === before[1] };
+  });
+  assert.deepEqual(result.kept, [true, true, true]);
+  assert(result.heroUpdated && result.tickerKept, 'only sections whose content changed are rebuilt');
+  assert.deepEqual(run.errors, []);
+  await run.context.close();
+}
+
 async function checkMirror(browser, base) {
   const run = await newPage(browser, base, { mirror: true, apiDelay: 120 });
   const page = run.page;
@@ -277,6 +304,7 @@ async function main() {
       assert.deepEqual(live.errors, []);
       await live.context.close();
       await checkGrid(browser, base);
+      await checkRefresh(browser, base);
       await checkMirror(browser, base);
       await checkMobile(browser, base);
       console.log('Browser regression tests passed.');
