@@ -2591,24 +2591,37 @@ function computeStats() {
   STATS = { stars: stars, forks: forks, forksN: forksN, sourceN: sourceN, langs: langs };
 }
 
+// 每次数据更新只构造一次卡片、搜索文本和稳定排序；筛选时复用节点。
+let gridIndex = null;
+function prepareGrid() {
+  if (gridIndex && gridIndex.data === DATA) return;
+  const entries = DATA.repos.map(r => ({
+    repo: r,
+    search: (r.name + ' ' + (r.description || '') + ' ' + r.topics.join(' ')).toLowerCase(),
+    pushed: dateValue(r.pushed_at), created: dateValue(r.created_at)
+  }));
+  const sorted = {
+    pushed: entries.slice().sort((a, b) => b.pushed - a.pushed),
+    stars: entries.slice().sort((a, b) => b.repo.stars - a.repo.stars),
+    created: entries.slice().sort((a, b) => b.created - a.created),
+    name: entries.slice().sort((a, b) => a.repo.name.localeCompare(b.repo.name))
+  };
+  const grid = $('#grid');
+  detachObservers(grid);
+  grid.innerHTML = DATA.repos.map(cardHTML).join('');
+  Array.from(grid.children).forEach((node, i) => { entries[i].node = node; });
+  gridIndex = { data: DATA, entries: entries, sorted: sorted, order: null, empty: null };
+  attachReveals(grid);
+}
 function filtered() {
   const q = query.trim().toLowerCase();
-  let list = DATA.repos.filter(r => {
+  return gridIndex.sorted[sortKey].filter(entry => {
+    const r = entry.repo;
     if (typeKey === 'source' && r.fork !== false) return false;
     if (typeKey === 'fork' && r.fork !== true) return false;
     if (langKey && r.language !== langKey) return false;
-    if (q) {
-      const hay = (r.name + ' ' + (r.description || '') + ' ' + r.topics.join(' ')).toLowerCase();
-      if (hay.indexOf(q) < 0) return false;
-    }
-    return true;
+    return !q || entry.search.includes(q);
   });
-  list = list.slice();
-  if (sortKey === 'stars') list.sort((a, b) => b.stars - a.stars);
-  else if (sortKey === 'created') list.sort((a, b) => dateValue(b.created_at) - dateValue(a.created_at));
-  else if (sortKey === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
-  else list.sort((a, b) => dateValue(b.pushed_at) - dateValue(a.pushed_at));
-  return list;
 }
 function isFiltered() { return query !== '' || langKey !== null || typeKey !== 'all' || sortKey !== 'pushed'; }
 
@@ -2766,14 +2779,22 @@ function renderSegs() {
       renderGrid();
     }));
   });
-  requestAnimationFrame(placePills);
+  schedulePills();
+}
+let pillFrame = 0;
+function schedulePills() {
+  if (pillFrame) return;
+  pillFrame = requestAnimationFrame(() => { pillFrame = 0; placePills(); });
 }
 function placePills() {
-  $$('.seg').forEach(seg => {
+  // 先统一读取，再统一写入，避免两个分段控件之间反复强制布局。
+  const sizes = $$('.seg').map(seg => {
     const pill = $('.seg-pill', seg), btn = seg.querySelector('[data-active]');
-    if (!pill || !btn) return;
-    pill.style.width = btn.offsetWidth + 'px';
-    pill.style.translate = btn.offsetLeft + 'px 0';
+    return pill && btn ? { pill: pill, width: btn.offsetWidth, left: btn.offsetLeft } : null;
+  }).filter(Boolean);
+  sizes.forEach(({ pill, width, left }) => {
+    pill.style.width = width + 'px';
+    pill.style.translate = left + 'px 0';
     pill.style.opacity = '1';
   });
 }
@@ -2829,20 +2850,38 @@ function cardHTML(r, i) {
 }
 
 function renderGrid() {
-  const list = filtered(), grid = $('#grid');
-  detachObservers(grid);
-  if (!list.length) {
-    grid.innerHTML = '<div class="empty c-low pop" style="grid-column:1/-1">' +
+  prepareGrid();
+  const list = filtered(), grid = $('#grid'), visible = new Set(list);
+  for (const entry of gridIndex.entries) {
+    const hidden = !visible.has(entry);
+    if (entry.node.hidden !== hidden) entry.node.hidden = hidden;
+  }
+  // 仅在排序变化时移动节点，不读取布局；隐藏节点仍保持正确的排序。
+  if (gridIndex.order !== sortKey) {
+    const active = document.activeElement;
+    let cursor = grid.firstElementChild;
+    for (const entry of gridIndex.sorted[sortKey]) {
+      if (entry.node === cursor) cursor = cursor.nextElementSibling;
+      else grid.insertBefore(entry.node, cursor);
+    }
+    gridIndex.order = sortKey;
+    if (active && active.isConnected && grid.contains(active) && !active.closest('[hidden]') && document.activeElement !== active) {
+      active.focus({ preventScroll: true });
+    }
+  }
+  // 尚未揭示的前几张卡片按当前筛选结果重新交错入场。
+  list.slice(0, 16).forEach((entry, i) => {
+    if (!entry.node.classList.contains('in')) entry.node.style.setProperty('--d', Math.min(i * 26, 416) + 'ms');
+  });
+  if (!list.length && !gridIndex.empty) {
+    grid.insertAdjacentHTML('beforeend', '<div class="empty c-low pop" style="grid-column:1/-1">' +
       '<span class="empty-ic sec-c">' + ic('searchx', 36) + '</span>' +
       '<div><h4>没有找到匹配的仓库</h4><p>换个关键词,或者清除全部筛选条件试试。</p></div>' +
-      '<button class="btn pri state lift m3-shadow-1" data-act="reset" style="height:44px">清除筛选</button></div>';
-  } else {
-    grid.innerHTML = list.map(cardHTML).join('');
+      '<button class="btn pri state lift m3-shadow-1" data-act="reset" style="height:44px">清除筛选</button></div>');
+    gridIndex.empty = grid.lastElementChild;
   }
-  attachReveals(grid);
-  const line = $('#countLine');
-  line.innerHTML = '显示 <b>' + list.length + '</b> / ' + DATA.repos.length + ' 个仓库';
-  $('#resetBtn').innerHTML = ic('x', 14) + ' 重置筛选';
+  if (gridIndex.empty) gridIndex.empty.hidden = list.length !== 0;
+  $('#countLine').innerHTML = '显示 <b>' + list.length + '</b> / ' + DATA.repos.length + ' 个仓库';
   $('#resetBtn').hidden = !isFiltered();
 }
 
@@ -3128,19 +3167,20 @@ addEventListener('scroll', onScroll, { passive: true });
 addEventListener('resize', onScroll, { passive: true });
 $('#fabTop').innerHTML = ic('up', 24);
 $('#fabTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' }));
-addEventListener('resize', placePills, { passive: true });
+addEventListener('resize', schedulePills, { passive: true });
 
 /* 静态图标填充 */
 $('#ghLink').innerHTML = ghIcon(20);
 $('#paletteBtnIcon').innerHTML = ic('wand', 18);
 $('#searchIcon').innerHTML = ic('search', 20);
 $('#clearSearch').innerHTML = ic('x', 16);
+$('#resetBtn').innerHTML = ic('x', 14) + ' 重置筛选';
 $('#heartIcon').innerHTML = ic('heart', 14, true);
 renderDarkBtn();
 onScroll();
 /* 异步字体可能在首次 ready 之后加载，完成时也要重新测量指示器。 */
 if (document.fonts && document.fonts.ready) {
-  const fontsChanged = () => requestAnimationFrame(placePills);
+  const fontsChanged = () => schedulePills();
   document.fonts.ready.then(fontsChanged);
   document.fonts.addEventListener('loadingdone', fontsChanged);
 }

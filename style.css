@@ -272,6 +272,10 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 .grid-wrap{padding-top:28px;padding-bottom:16px}
 .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(min(290px,100%),1fr))}
 .card{position:relative;display:flex;flex-direction:column;gap:14px;height:100%;border-radius:26px;padding:20px;overflow:hidden;cursor:pointer;background:var(--md-surface-container-low);border:1px solid color-mix(in srgb,var(--md-outline-variant) 70%,transparent);transition:translate .35s var(--e),box-shadow .35s var(--e),background-color .3s var(--e),border-color .3s var(--e)}
+/* 卡片自身裁剪内容；外层保持可溢出，以保留悬浮阴影与位移。 */
+@supports (content-visibility:auto) and (contain-intrinsic-block-size:auto 170px){
+  .grid .card{content-visibility:auto;contain-intrinsic-block-size:auto 170px}
+}
 .card:hover,.card:focus-visible{translate:0 -8px;background:var(--md-surface-container-high);box-shadow:0 2px 3px color-mix(in srgb,var(--md-shadow) 22%,transparent),0 16px 28px -8px color-mix(in srgb,var(--md-shadow) 22%,transparent)}
 .card:active{translate:0 -3px}
 .card-go{position:absolute;top:16px;right:16px;opacity:0;translate:6px -6px;color:var(--md-primary);transition:opacity .3s var(--e),translate .3s var(--e)}
