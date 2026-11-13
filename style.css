@@ -376,6 +376,9 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{animation:spin .8s linear infinite}
 
+/* 离屏区块暂停循环动画(.loops-off 由 JS 的 IntersectionObserver 切换) */
+.loops-off *,.loops-off *::before{animation-play-state:paused!important}
+
 /* ——— 减少动态效果 ——— */
 @media (prefers-reduced-motion:reduce){
   .blob,.marquee,.avatar-blob,.avatar-ring,.floaty,.bob,.page-loader-spinner{animation:none!important}

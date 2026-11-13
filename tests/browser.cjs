@@ -250,6 +250,14 @@ async function checkRefresh(browser, base) {
   });
   assert.deepEqual([cards.total, cards.wrappersLost, cards.articlesLost, cards.edited, cards.added], [0, 0, 0, 1, 1]);
   assert.deepEqual(cards.names, cards.expected);
+  // Looping decorations only run while their section is on screen.
+  const playState = sel => page.evaluate(s => getComputedStyle(document.querySelector(s)).animationPlayState, sel);
+  assert.equal(await playState('#hero .avatar-blob'), 'running');
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  const loops = ['#hero .avatar-blob', '#ticker .marquee'];
+  await page.waitForFunction(list => list.every(s => getComputedStyle(document.querySelector(s)).animationPlayState === 'paused'), loops);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForFunction(list => list.every(s => getComputedStyle(document.querySelector(s)).animationPlayState === 'running'), loops);
   assert.deepEqual(run.errors, []);
   await run.context.close();
 }

@@ -2562,6 +2562,13 @@ function swapHTML(el, html) {
   return true;
 }
 
+/* 循环动画只在所属区块可见时运行：离屏后暂停，不再逐帧占用样式计算、重绘与合成。 */
+const loopIO = new IntersectionObserver(entries => {
+  for (const e of entries) e.target.classList.toggle('loops-off', !e.isIntersecting);
+}, { rootMargin: '80px' });
+loopIO.observe($('#hero'));
+loopIO.observe($('#ticker'));
+
 /* ================================================================
    8 · 全局状态
 ================================================================ */
