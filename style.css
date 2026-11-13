@@ -130,16 +130,19 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 
 /* ——— 氛围光斑 ——— */
 .blobs{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
-/* 漂移动画留在外层,模糊放在静止的 ::before 上:模糊结果随图层只光栅化一次,
-   合成器逐帧仅移动贴图,不必每帧为三个大图层重算 80px 高斯模糊。 */
+/* 漂移动画留在外层,柔边由静止 ::before 上的径向渐变直接画出:渐变随图层只光栅化一次,
+   合成器逐帧仅移动贴图。filter:blur() 则属于合成阶段的效果,图层每次被绘制都要重算一遍
+   80px 高斯模糊,三个常驻动画的大图层等于每帧都在模糊。::before 外扩 30% 以保留原先模糊溢出的范围。
+   渐变里只引用 currentColor,主题色经 color 传入:动画元素每帧重算样式时,写在渐变里的 var()
+   会被当成新的背景图,整层重绘并重新光栅化。 */
 .blob{position:absolute;will-change:transform;transform:translateZ(0)}
-.blob::before{content:"";position:absolute;inset:0;border-radius:9999px;background:var(--c);filter:blur(80px)}
+.blob::before{content:"";position:absolute;inset:-30%;color:var(--c);background:radial-gradient(closest-side,currentColor 27%,transparent 98%)}
 .blob-1{width:44vw;height:44vw;min-width:380px;min-height:380px;top:-12vw;right:-8vw;--c:var(--md-blob-1);opacity:.5;animation:drift-1 26s ease-in-out infinite}
 .blob-2{width:36vw;height:36vw;min-width:300px;min-height:300px;top:32vh;left:-14vw;--c:var(--md-blob-2);opacity:.42;animation:drift-2 32s ease-in-out infinite}
 .blob-3{width:30vw;height:30vw;min-width:260px;min-height:260px;bottom:-10vw;right:12vw;--c:var(--md-blob-3);opacity:.4;animation:drift-3 38s ease-in-out infinite}
 @keyframes drift-1{0%,100%{transform:translate(0,0) scale(1) rotate(0)}50%{transform:translate(-6vw,7vh) scale(1.15) rotate(28deg)}}
-@keyframes drift-2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(8vw,-6vh) scale(.9) rotate(-20deg)}}
-@keyframes drift-3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-7vw,-8vh) scale(1.12) rotate(16deg)}}
+@keyframes drift-2{0%,100%{transform:translate(0,0) scale(1) rotate(0)}50%{transform:translate(8vw,-6vh) scale(.9) rotate(-20deg)}}
+@keyframes drift-3{0%,100%{transform:translate(0,0) scale(1) rotate(0)}50%{transform:translate(-7vw,-8vh) scale(1.12) rotate(16deg)}}
 
 /* ——— Hero ——— */
 .hero{padding-top:112px}
