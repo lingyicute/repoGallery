@@ -303,6 +303,8 @@ async function main() {
     if (!process.argv.includes('--bench-only')) {
       assert(bootMs < 1100, `Snapshot should be usable before slow external resources: ${bootMs}ms`);
       assert.match(await offline.page.locator('#srcChip').innerText(), /快照/);
+      // The always-animating ambient blobs must stay free of per-frame filters.
+      assert.deepEqual(await offline.page.locator('.blob').evaluateAll(els => els.map(el => getComputedStyle(el).filter)), ['none', 'none', 'none']);
       assert.deepEqual(offline.errors, []);
     }
     await offline.context.close();
