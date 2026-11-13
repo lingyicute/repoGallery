@@ -2,6 +2,20 @@
 
 ![image](https://raw.githubusercontent.com/lingyicute/repoGallery/main/screenshot.webp)
 
+## Browser regression tests
+
+The page is static. To run the offline Chromium tests and the repeatable 4× CPU
+throttled grid benchmark, install Node.js and Playwright, then run:
+
+```sh
+npm install --no-save playwright@1.57.0
+npx playwright install chromium
+node tests/browser.cjs
+```
+
+Use `node tests/browser.cjs --bench-only` to print timings without assertions.
+The test server is local and external API, font and image responses are mocked.
+
 ## 🗂️ License
 
 repoGallery is released under the GNU Affero General Public License v3.0 (AGPLv3).
