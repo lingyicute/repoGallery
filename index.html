@@ -2568,9 +2568,9 @@ function toast(msg) {
   clearTimeout(snackTimer); clearTimeout(snackOut);
   snackTimer = setTimeout(() => {
     const el = host.firstElementChild;
-    if (el) el.classList.add('out');
-    snackOut = old.inert = true;
-      setTimeout(() => old.remove(), 190);
+    if (!el) return;
+    el.classList.add('out');
+    snackOut = setTimeout(() => el.remove(), 190);
   }, 2100);
 }
 

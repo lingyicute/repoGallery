@@ -196,6 +196,11 @@ async function checkGrid(browser, base) {
   assert(await page.evaluate(() => document.activeElement.closest('.card') === Array.from(document.querySelectorAll('#grid > .rv-lite .card')).at(-1)));
   await last.locator('[data-copy]').click();
   assert.match(await page.evaluate(() => window.copiedText), /^https:\/\/github\.com\/lingyicute\/.+\.git$/);
+  // 新提示恰好在上一条退出动画期间出现时，旧计时器不能误删新提示。
+  await page.waitForTimeout(2200);
+  await page.evaluate(() => toast('后一条提示'));
+  await page.waitForTimeout(2350);
+  assert.equal(await page.locator('#snackHost .snack').count(), 0);
   assert.deepEqual(run.errors, []);
   await run.context.close();
 }
