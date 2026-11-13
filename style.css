@@ -38,9 +38,10 @@ body {
 img { display:block; max-width:100%; }
 
 /* ——— 首屏加载覆盖层 ——— */
-.page-loader{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--md-surface) 88%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);touch-action:none;overscroll-behavior:contain;opacity:1;visibility:visible;transition:opacity .38s var(--e),visibility 0s linear 0s}
-/* 淡出时立即撤掉全屏背景模糊:此刻页面正在播放入场动画,合成器不必逐帧重算整屏模糊。 */
-.page-loader.is-ready{opacity:0;visibility:hidden;pointer-events:none;-webkit-backdrop-filter:none;backdrop-filter:none;transition:opacity .38s var(--e),visibility 0s linear .38s}
+/* 覆盖层只用高遮盖度的底色,不做 backdrop-filter:加载期间骨架屏与光斑仍在动,
+   整屏背景模糊会让合成器逐帧回读并重算 18px 高斯模糊,在最弱的设备上恰好拖慢首屏。 */
+.page-loader{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--md-surface) 94%,transparent);touch-action:none;overscroll-behavior:contain;opacity:1;visibility:visible;transition:opacity .38s var(--e),visibility 0s linear 0s}
+.page-loader.is-ready{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .38s var(--e),visibility 0s linear .38s}
 .page-loader-inner{display:flex;flex-direction:column;align-items:center;gap:14px;min-width:128px;padding:24px 22px;border:1px solid color-mix(in srgb,var(--md-outline-variant) 70%,transparent);border-radius:28px;color:var(--md-on-surface-variant)}
 .page-loader-spinner{width:40px;height:40px;border:4px solid color-mix(in srgb,var(--md-primary) 20%,transparent);border-top-color:var(--md-primary);border-right-color:var(--md-tertiary);border-radius:50%;animation:page-loader-spin .8s linear infinite}
 .page-loader-label{font-size:12px;font-weight:700;letter-spacing:.04em}
