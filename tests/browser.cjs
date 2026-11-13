@@ -39,7 +39,7 @@ async function startServer() {
 }
 
 async function newPage(browser, base, options = {}) {
-  const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, reducedMotion: 'reduce' });
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, reducedMotion: options.reducedMotion || 'reduce' });
   const page = await context.newPage();
   const errors = [], events = [];
   page.on('pageerror', e => errors.push(e.message));
@@ -63,6 +63,13 @@ async function newPage(browser, base, options = {}) {
       }
       if (url.hostname === 'ungh.cc') {
         await sleep(options.apiDelay ?? 600);
+        if (options.mirror) {
+          const r = snapshot.find(item => item.fork === false);
+          return await route.fulfill({ json: { repos: [
+            { id: r.id, name: r.name, description: r.description, stars: r.stars, forks: r.forks, createdAt: r.created_at, pushedAt: r.pushed_at },
+            { id: 99999999998, name: 'mirror-unknown', description: 'new', stars: 2, forks: 0, createdAt: r.created_at, pushedAt: r.pushed_at }
+          ] } });
+        }
         return await route.fulfill({ status: 503, body: '{}' });
       }
       if (url.hostname === 'fonts.googleapis.com') {
@@ -122,6 +129,110 @@ async function benchmark(page) {
   return result;
 }
 
+async function checkGrid(browser, base) {
+  const run = await newPage(browser, base, { apiDelay: 500, reducedMotion: 'no-preference' });
+  const page = run.page;
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: async text => { window.copiedText = text; } } });
+  });
+  await page.goto(base, { waitUntil: 'commit' });
+  await page.waitForFunction(() => !document.body.hasAttribute('aria-busy'));
+  const sample = snapshot.find(r => r.language && r.fork === false && snapshot.filter(x =>
+    (x.name + ' ' + (x.description || '') + ' ' + x.topics.join(' ')).toLowerCase().includes(r.name.toLowerCase())
+  ).length === 1);
+  assert(sample, 'fixture needs a unique searchable source repository');
+  await page.evaluate(name => {
+    window.savedCard = Array.from(document.querySelectorAll('#grid > .rv-lite')).find(el => el.querySelector('.card-name').textContent === name);
+  }, sample.name);
+  const search = page.locator('#searchInput');
+  await search.fill(sample.name);
+  await page.waitForFunction(() => document.querySelector('#countLine').textContent.match(/显示\s*1\s*\//));
+  assert.equal(await page.locator('#grid > .rv-lite:not([hidden])').count(), 1);
+  assert(await page.evaluate(() => window.savedCard.isConnected && !window.savedCard.hidden));
+  await search.fill('no-repository-matches-this-phrase');
+  await page.waitForFunction(() => document.querySelector('#countLine').textContent.match(/显示\s*0\s*\//));
+  assert.equal(await page.locator('#grid .empty:visible').count(), 1);
+  assert(await page.evaluate(() => window.savedCard.isConnected && window.savedCard.hidden));
+  await page.locator('#clearSearch').click();
+  assert(await page.evaluate(() => window.savedCard.isConnected && !window.savedCard.hidden));
+
+  // Moving a focused card during a sort must not lose keyboard focus.
+  assert(await page.evaluate(() => {
+    const card = window.savedCard.querySelector('.card');
+    card.focus({ preventScroll: true });
+    sortKey = 'name'; renderGrid();
+    return document.activeElement === card;
+  }));
+  let names = await page.locator('#grid > .rv-lite:not([hidden]) .card-name').allTextContents();
+  assert.deepEqual(names, snapshot.map(r => r.name).sort((a, b) => a.localeCompare(b)));
+  await page.locator('#segSort button[data-v="stars"]').click();
+  await page.locator('#segType button[data-v="source"]').click();
+  await page.locator(`#langChips button[data-lang=${JSON.stringify(sample.language)}]`).click();
+  names = await page.locator('#grid > .rv-lite:not([hidden]) .card-name').allTextContents();
+  assert.deepEqual(names, snapshot.filter(r => r.fork === false && r.language === sample.language)
+    .sort((a, b) => b.stars - a.stars).map(r => r.name));
+  assert.equal(await page.locator('#segType button[data-v="source"]').getAttribute('aria-pressed'), 'true');
+  await page.locator('#resetBtn').click();
+  assert.equal(await page.locator('#grid > .rv-lite:not([hidden])').count(), snapshot.length);
+
+  // A far-off card remains discoverable and keyboard reachable with containment.
+  const last = page.locator('#grid > .rv-lite .card').last();
+  const lastName = await last.locator('.card-name').textContent();
+  await page.evaluate(() => window.scrollTo(0, 0));
+  assert(await page.evaluate(name => window.find(name), lastName));
+  await last.focus();
+  await page.waitForFunction(() => {
+    const card = Array.from(document.querySelectorAll('#grid > .rv-lite .card')).at(-1);
+    const box = card.getBoundingClientRect();
+    return card.parentElement.classList.contains('in') && box.height > 80 && box.top < innerHeight && box.bottom > 0;
+  });
+  const dimensions = await last.evaluate(card => {
+    const outer = card.getBoundingClientRect(), meta = card.querySelector('.card-meta').getBoundingClientRect();
+    return { width: outer.width, height: outer.height, metaBottom: meta.bottom, cardBottom: outer.bottom, visibility: getComputedStyle(card).contentVisibility };
+  });
+  assert(dimensions.width > 200 && dimensions.height > 80);
+  assert(dimensions.metaBottom <= dimensions.cardBottom + 1, 'card contents must not be clipped by the size estimate');
+  await page.keyboard.press('Tab');
+  assert(await page.evaluate(() => document.activeElement.closest('.card') === Array.from(document.querySelectorAll('#grid > .rv-lite .card')).at(-1)));
+  await last.locator('[data-copy]').click();
+  assert.match(await page.evaluate(() => window.copiedText), /^https:\/\/github\.com\/lingyicute\/.+\.git$/);
+  assert.deepEqual(run.errors, []);
+  await run.context.close();
+}
+
+async function checkMirror(browser, base) {
+  const run = await newPage(browser, base, { mirror: true, apiDelay: 120 });
+  const page = run.page;
+  await page.goto(base, { waitUntil: 'commit' });
+  await page.waitForFunction(() => document.querySelector('#srcChip').textContent.includes('镜像'), null, { timeout: 5000 });
+  assert.equal(await page.locator('#grid .card').count(), 2);
+  assert.equal(await page.getByText('类型未知').count(), 1);
+  await page.locator('#segType button[data-v="source"]').click();
+  assert.equal(await page.locator('#grid > .rv-lite:not([hidden])').count(), 1);
+  assert.match(await page.locator('#countLine').innerText(), /显示\s*1\s*\/\s*2/);
+  assert.deepEqual(run.errors, []);
+  await run.context.close();
+}
+
+async function checkMobile(browser, base) {
+  const run = await newPage(browser, base, { apiDelay: 500 });
+  const page = run.page;
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(base, { waitUntil: 'commit' });
+  await page.waitForFunction(() => !document.body.hasAttribute('aria-busy'));
+  const card = page.locator('#grid .card').first();
+  await card.scrollIntoViewIfNeeded();
+  const result = await card.evaluate(el => {
+    const box = el.getBoundingClientRect(), meta = el.querySelector('.card-meta').getBoundingClientRect();
+    return { scrollWidth: document.documentElement.scrollWidth, viewportWidth: innerWidth, left: box.left, right: box.right, bottom: box.bottom, metaBottom: meta.bottom };
+  });
+  assert(result.scrollWidth <= result.viewportWidth + 1, 'mobile page must not overflow horizontally');
+  assert(result.left >= 0 && result.right <= result.viewportWidth + 1);
+  assert(result.metaBottom <= result.bottom + 1, 'mobile card content must not be clipped');
+  assert.deepEqual(run.errors, []);
+  await run.context.close();
+}
+
 async function main() {
   const { server, base } = await startServer();
   let browser;
@@ -160,6 +271,9 @@ async function main() {
       assert.equal(live.events.filter(e => e.path.includes('/repos?')).length, Math.ceil(live.live.length / 100));
       assert.deepEqual(live.errors, []);
       await live.context.close();
+      await checkGrid(browser, base);
+      await checkMirror(browser, base);
+      await checkMobile(browser, base);
       console.log('Browser regression tests passed.');
     }
   } finally {
