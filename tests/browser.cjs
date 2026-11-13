@@ -228,6 +228,28 @@ async function checkRefresh(browser, base) {
   });
   assert.deepEqual(result.kept, [true, true, true]);
   assert(result.heroUpdated && result.tickerKept, 'only sections whose content changed are rebuilt');
+  // Cards are keyed by repository: only edited, added or removed ones touch the DOM.
+  const cards = await page.evaluate(() => {
+    const before = Array.from(document.querySelectorAll('#grid > .rv-lite'));
+    const articles = before.map(node => node.firstElementChild);
+    const edited = DATA.repos[3], removed = DATA.repos[5];
+    DATA = { ...DATA, repos: DATA.repos.filter(r => r !== removed)
+      .map(r => r === edited ? { ...r, description: 'changed description' } : { ...r })
+      .concat({ ...edited, id: 99999999997, name: 'added-repo', full_name: 'lingyicute/added-repo' }) };
+    computeStats(); renderAll();
+    const after = Array.from(document.querySelectorAll('#grid > .rv-lite'));
+    return {
+      total: after.length - before.length,
+      wrappersLost: before.length - 1 - after.filter(node => before.includes(node)).length,
+      articlesLost: before.length - 2 - after.filter(node => articles.includes(node.firstElementChild)).length,
+      edited: after.filter(node => node.querySelector('.desc')?.textContent === 'changed description').length,
+      added: after.filter(node => node.querySelector('.card-name').textContent === 'added-repo').length,
+      names: after.map(node => node.querySelector('.card-name').textContent),
+      expected: gridIndex.sorted[sortKey].map(entry => entry.repo.name)
+    };
+  });
+  assert.deepEqual([cards.total, cards.wrappersLost, cards.articlesLost, cards.edited, cards.added], [0, 0, 0, 1, 1]);
+  assert.deepEqual(cards.names, cards.expected);
   assert.deepEqual(run.errors, []);
   await run.context.close();
 }
@@ -289,6 +311,7 @@ async function main() {
       const live = await newPage(browser, base, { live: true, apiDelay: 700 });
       await live.page.goto(base, { waitUntil: 'commit' });
       await live.page.waitForFunction(() => !document.body.hasAttribute('aria-busy'), null, { timeout: 3000 });
+      await live.page.evaluate(() => { window.snapshotCards = Array.from(document.querySelectorAll('#grid .card')); });
       await live.page.locator('#searchInput').fill('fresh-live-item');
       await live.page.waitForTimeout(200);
       assert.match(await live.page.locator('#countLine').innerText(), /显示\s*0/);
@@ -297,6 +320,7 @@ async function main() {
       assert.equal(await live.page.locator('#searchInput').inputValue(), 'fresh-live-item');
       assert.equal(await live.page.locator('#searchInput').evaluate(el => document.activeElement === el), true);
       assert.equal(await live.page.locator('#grid .card-name').filter({ hasText: 'fresh-live-item' }).count(), 1);
+      assert(await live.page.evaluate(() => window.snapshotCards.every(card => card.isConnected)), 'live data must reuse unchanged snapshot cards');
       const profile = live.events.find(e => e.path === '/users/lingyicute');
       const page1 = live.events.find(e => e.path.includes('/repos?') && e.path.includes('page=1'));
       assert(profile && page1 && page1.start < profile.end, 'Profile and first repository page must be fetched concurrently');

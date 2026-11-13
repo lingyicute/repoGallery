@@ -2600,27 +2600,47 @@ function computeStats() {
   STATS = { stars: stars, forks: forks, forksN: forksN, sourceN: sourceN, langs: langs };
 }
 
-// 每次数据更新只构造一次卡片、搜索文本和稳定排序；筛选时复用节点。
+// 每次数据更新只构造一次搜索文本和稳定排序；筛选时复用节点。
+// 数据刷新时按仓库 id 复用卡片：内容未变的节点原样保留，只新建、改写或移除有差异的卡片。
 let gridIndex = null;
 function prepareGrid() {
   if (gridIndex && gridIndex.data === DATA) return;
-  const entries = DATA.repos.map(r => ({
-    repo: r,
-    search: (r.name + ' ' + (r.description || '') + ' ' + r.topics.join(' ')).toLowerCase(),
-    pushed: dateValue(r.pushed_at), created: dateValue(r.created_at)
-  }));
+  const grid = $('#grid'), old = new Map(), stale = new Set(), fresh = [];
+  if (!gridIndex) grid.replaceChildren();
+  else for (const entry of gridIndex.entries) {
+    stale.add(entry);
+    if (!old.has(entry.repo.id)) old.set(entry.repo.id, entry);
+  }
+  const entries = DATA.repos.map(r => {
+    const prev = old.get(r.id), html = cardHTML(r);
+    const entry = {
+      repo: r, html: html, node: prev ? prev.node : null,
+      search: (r.name + ' ' + (r.description || '') + ' ' + r.topics.join(' ')).toLowerCase(),
+      pushed: dateValue(r.pushed_at), created: dateValue(r.created_at)
+    };
+    if (!prev) fresh.push(entry);
+    else {
+      old.delete(r.id); stale.delete(prev);
+      if (prev.html !== html) prev.node.innerHTML = html;
+    }
+    return entry;
+  });
+  for (const entry of stale) { io.unobserve(entry.node); entry.node.remove(); }
+  const empty = gridIndex ? gridIndex.empty : null;
+  if (fresh.length) {
+    const frag = document.createRange().createContextualFragment(
+      fresh.map(entry => '<div class="rv-lite" style="--d:416ms">' + entry.html + '</div>').join(''));
+    Array.from(frag.children).forEach((node, i) => { fresh[i].node = node; });
+    grid.insertBefore(frag, empty);
+    for (const entry of fresh) io.observe(entry.node);
+  }
   const sorted = {
     pushed: entries.slice().sort((a, b) => b.pushed - a.pushed),
     stars: entries.slice().sort((a, b) => b.repo.stars - a.repo.stars),
     created: entries.slice().sort((a, b) => b.created - a.created),
     name: entries.slice().sort((a, b) => a.repo.name.localeCompare(b.repo.name))
   };
-  const grid = $('#grid');
-  detachObservers(grid);
-  grid.innerHTML = DATA.repos.map(cardHTML).join('');
-  Array.from(grid.children).forEach((node, i) => { entries[i].node = node; });
-  gridIndex = { data: DATA, entries: entries, sorted: sorted, order: null, empty: null };
-  attachReveals(grid);
+  gridIndex = { data: DATA, entries: entries, sorted: sorted, order: null, empty: empty };
 }
 function filtered() {
   const q = query.trim().toLowerCase();
@@ -2830,7 +2850,7 @@ function renderChips() {
   }));
 }
 
-function cardHTML(r, i) {
+function cardHTML(r) {
   const homepage = safeHttpURL(r.homepage, true);
   let badges = '';
   if (r.fork === null) badges += '<span class="badge dim">类型未知</span>';
@@ -2840,8 +2860,7 @@ function cardHTML(r, i) {
   let topics = '';
   r.topics.slice(0, 3).forEach(t => { topics += '<span class="topic">' + esc(t) + '</span>'; });
   if (r.topics.length > 3) topics += '<span class="topic-more">+' + (r.topics.length - 3) + '</span>';
-  return '<div class="rv-lite" style="--d:' + Math.min(i * 26, 416) + 'ms">' +
-    '<article class="card" tabindex="0" role="link" data-url="' + esc(repoURL(r)) + '" aria-label="打开仓库 ' + esc(r.full_name) + '">' +
+  return '<article class="card" tabindex="0" role="link" data-url="' + esc(repoURL(r)) + '" aria-label="打开仓库 ' + esc(r.full_name) + '">' +
     '<span class="card-go">' + ic('out', 20) + '</span>' +
     '<div class="card-head"><span class="card-ic ' + (r.fork ? 'fork' : 'sec-c') + '">' + ic(r.fork ? 'fork' : 'book', 18) + '</span>' +
     '<h3 class="card-name">' + esc(r.name) + '</h3></div>' +
@@ -2856,7 +2875,7 @@ function cardHTML(r, i) {
     '<span class="card-actions">' +
     (homepage ? '<a class="ico-btn state" href="' + esc(homepage) + '" target="_blank" rel="noopener noreferrer" aria-label="打开项目主页">' + ic('globe', 16) + '</a>' : '') +
     '<button class="ico-btn state" data-copy="' + esc(repoURL(r)) + '.git" aria-label="复制克隆地址">' + ic('copy', 16) + '</button>' +
-    '</span></div></article></div>';
+    '</span></div></article>';
 }
 
 function renderGrid() {
