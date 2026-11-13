@@ -360,8 +360,10 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 .f-tag .heart{color:var(--md-primary)}
 
 /* ——— 揭示系统(共享 IO 加 .in) ——— */
-.rv{opacity:0;translate:0 26px;filter:blur(5px);transition:opacity .75s var(--e) var(--d,0ms),translate .75s var(--e) var(--d,0ms),filter .75s var(--e) var(--d,0ms)}
-.rv.in{opacity:1;translate:0 0;filter:none}
+/* 只过渡 opacity 与 translate,二者全程由合成器驱动。入场若再叠加 filter:blur(),
+   工具栏面板、精选卡这类大块图层在 0.75s 内每帧都要多跑一遍高斯模糊,结束时还要再提交一次图层变更。 */
+.rv{opacity:0;translate:0 26px;transition:opacity .75s var(--e) var(--d,0ms),translate .75s var(--e) var(--d,0ms)}
+.rv.in{opacity:1;translate:0 0}
 .rv-lite{opacity:0;translate:0 22px;content-visibility:auto;contain-intrinsic-size:auto 200px;transition:opacity .6s var(--e) var(--d,0ms),translate .6s var(--e) var(--d,0ms)}
 .rv-lite.in{opacity:1;translate:0 0}
 .rv-mask{display:inline-flex;overflow:hidden;padding-block:.06em .12em;margin-block:-.06em -.12em}
