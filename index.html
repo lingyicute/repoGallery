@@ -2525,7 +2525,12 @@ applyTheme(seed, dark);
    7 · 揭示系统(共享 IntersectionObserver)与计数器
 ================================================================ */
 const io = new IntersectionObserver(entries => {
-  for (const e of entries) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  const shown = entries.filter(e => e.isIntersecting);
+  // 同一批进入视口的卡片按行列位置交错入场；滚动中出现的卡片不再固定等待 416ms。
+  shown.filter(e => e.target.parentNode.id === 'grid')
+    .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top || a.boundingClientRect.left - b.boundingClientRect.left)
+    .forEach((e, i) => e.target.style.setProperty('--d', Math.min(i * 26, 416) + 'ms'));
+  for (const e of shown) { e.target.classList.add('in'); io.unobserve(e.target); }
 }, { threshold: 0.05, rootMargin: '0px 0px -4% 0px' });
 function attachReveals(root) {
   $$('.rv:not(.in), .rv-lite:not(.in), .donut:not(.in), .count:not(.done)', root).forEach(el => io.observe(el));
@@ -2636,7 +2641,7 @@ function prepareGrid() {
   const empty = gridIndex ? gridIndex.empty : null;
   if (fresh.length) {
     const frag = document.createRange().createContextualFragment(
-      fresh.map(entry => '<div class="rv-lite" style="--d:416ms">' + entry.html + '</div>').join(''));
+      fresh.map(entry => '<div class="rv-lite">' + entry.html + '</div>').join(''));
     Array.from(frag.children).forEach((node, i) => { fresh[i].node = node; });
     grid.insertBefore(frag, empty);
     for (const entry of fresh) io.observe(entry.node);
@@ -2917,10 +2922,6 @@ function renderGrid() {
       active.focus({ preventScroll: true });
     }
   }
-  // 尚未揭示的前几张卡片按当前筛选结果重新交错入场。
-  list.slice(0, 16).forEach((entry, i) => {
-    if (!entry.node.classList.contains('in')) entry.node.style.setProperty('--d', Math.min(i * 26, 416) + 'ms');
-  });
   if (!list.length && !gridIndex.empty) {
     grid.insertAdjacentHTML('beforeend', '<div class="empty c-low pop" style="grid-column:1/-1">' +
       '<span class="empty-ic sec-c">' + ic('searchx', 36) + '</span>' +
