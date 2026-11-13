@@ -12,8 +12,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="preconnect" href="https://github.com" />
-<link rel="preload" href="https://nebulove.92li.uk/Nebulove.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,400..700&family=JetBrains+Mono:wght@400..700&family=Noto+Sans+SC:wght@400..700&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://nebulove.92li.uk" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,400..700&family=JetBrains+Mono:wght@400..700&family=Noto+Sans+SC:wght@400..700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+<noscript><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,400..700&family=JetBrains+Mono:wght@400..700&family=Noto+Sans+SC:wght@400..700&display=swap" rel="stylesheet" /></noscript>
 <style id="critical-loader-style">
   /* 外部样式表尚未到达时，加载层也必须保持可见且居中 */
   html, body { margin: 0; }
@@ -2459,11 +2460,15 @@ function normMirror(r) {
 function snapshotData() { return { user: USER, repos: SNAP.map(snapRepo), source: 'snapshot' }; }
 async function loadData() {
   try {
-    const user = await fetchJSON(GH + '/users/' + WHO, GH_TIMEOUT_MS);
+    // 用户资料与第一页互不依赖；后续分页仍按顺序检查重复页。
+    const [user, firstPage] = await Promise.all([
+      fetchJSON(GH + '/users/' + WHO, GH_TIMEOUT_MS),
+      fetchJSON(GH + '/users/' + WHO + '/repos?per_page=100&sort=full_name&page=1', GH_TIMEOUT_MS)
+    ]);
     if (!user || user.login !== WHO) throw new Error('Invalid user');
     const repos = [], seen = new Set();
     for (let p = 1; ; p++) {
-      const chunk = await fetchJSON(GH + '/users/' + WHO + '/repos?per_page=100&sort=full_name&page=' + p, GH_TIMEOUT_MS);
+      const chunk = p === 1 ? firstPage : await fetchJSON(GH + '/users/' + WHO + '/repos?per_page=100&sort=full_name&page=' + p, GH_TIMEOUT_MS);
       if (!Array.isArray(chunk)) throw new Error('Invalid repository page');
       let added = 0;
       for (const r of chunk) {
@@ -3058,12 +3063,14 @@ function refreshData(notify = true) {
   refreshTask = (async () => {
     try {
       const d = await loadData();
-      // 网络失败不应把当前已取得的实时数据回滚成旧快照。
-      if (d.source !== 'snapshot' || !DATA || DATA.source === 'snapshot') {
+      // 快照已经显示；网络失败时既不回滚实时数据，也不重复重建相同快照。
+      if (d.source !== 'snapshot' || !DATA) {
         const active = document.activeElement;
         const focusKey = active && { id: active.id, copy: active.dataset.copy, url: active.dataset.url,
           value: active.dataset.v, segment: active.closest('.seg')?.id, lang: active.dataset.lang };
+        const previousAvatar = DATA && DATA.user.avatar_url;
         DATA = d; computeStats(); renderAll();
+        if (d.user.avatar_url !== previousAvatar) autoTheme(d.user.avatar_url);
         if (active && !active.isConnected && focusKey) {
           const next = (focusKey.id && document.getElementById(focusKey.id)) ||
             $$('[data-copy], [data-url], [data-v], [data-lang]').find(el =>
@@ -3131,33 +3138,16 @@ $('#clearSearch').innerHTML = ic('x', 16);
 $('#heartIcon').innerHTML = ic('heart', 14, true);
 renderDarkBtn();
 onScroll();
-/* 字体就绪后重新测量分段指示器宽度 */
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => requestAnimationFrame(placePills));
+/* 异步字体可能在首次 ready 之后加载，完成时也要重新测量指示器。 */
+if (document.fonts && document.fonts.ready) {
+  const fontsChanged = () => requestAnimationFrame(placePills);
+  document.fonts.ready.then(fontsChanged);
+  document.fonts.addEventListener('loadingdone', fontsChanged);
+}
 
 /* ================================================================
    11 · 启动与首屏加载
 ================================================================ */
-function whenWindowLoaded() {
-  if (document.readyState === 'complete') return Promise.resolve();
-  return new Promise(resolve => addEventListener('load', resolve, { once: true }));
-}
-function whenFontsReady() {
-  return document.fonts && document.fonts.ready ? document.fonts.ready.catch(() => {}) : Promise.resolve();
-}
-function whenImagesReady(root) {
-  return Promise.all($$('img', root).map(img => new Promise(resolve => {
-    const done = () => {
-      img.removeEventListener('load', done);
-      img.removeEventListener('error', done);
-      // 动态插入的头像不仅要下载完成，也要完成解码后再揭开加载层。
-      const decoded = img.naturalWidth && img.decode ? img.decode().catch(() => {}) : Promise.resolve();
-      decoded.then(resolve);
-    };
-    if (img.complete) { done(); return; }
-    img.addEventListener('load', done, { once: true });
-    img.addEventListener('error', done, { once: true });
-  })));
-}
 function releasePageLoader() {
   const loader = $('#pageLoader');
   document.body.removeAttribute('aria-busy');
@@ -3167,29 +3157,31 @@ function releasePageLoader() {
   setTimeout(() => loader.remove(), 420);
 }
 
-async function bootPage() {
-  let d;
+function autoTheme(avatar) {
+  if (themeChosen || !avatar) return;
+  // 取色限时且不阻塞首屏；异步结果不能覆盖用户选择或新的头像。
+  seedFromImage(avatar).then(c => {
+    if (c && !themeChosen && DATA && DATA.user.avatar_url === avatar) {
+      seed = c; applyThemeAnim(true);
+    }
+  }).catch(() => {});
+}
+
+function bootPage() {
   try {
-    // 加载层是入场设计：数据、页面资源与字体就绪前，不展示半成品。
-    [d] = await Promise.all([loadData(), whenWindowLoaded(), whenFontsReady()]);
+    // 内嵌快照立即可用，不等待网络、字体、头像或图片解码。
+    DATA = snapshotData();
+    computeStats();
+    renderAll();
   } catch (e) {
-    console.error('页面初始化失败,使用本地快照', e);
-    d = snapshotData();
+    console.error('页面初始化失败', e);
+  } finally {
+    releasePageLoader();
   }
-  DATA = d;
-  computeStats();
-  renderAll();
-
-  const autoSeed = !themeChosen
-    ? seedFromImage(d.user.avatar_url, 0).then(c => {
-        if (c && !themeChosen) { seed = c; applyThemeAnim(true); }
-      })
-    : Promise.resolve();
-
-  // 再等待动态内容触发的字体、头像解码及首次取色，不以计时器强制放行。
-  await Promise.all([whenFontsReady(), whenImagesReady(document), autoSeed]);
-  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-  releasePageLoader();
+  if (DATA) requestAnimationFrame(() => setTimeout(() => {
+    autoTheme(DATA.user.avatar_url);
+    refreshData(false);
+  }, 0));
 }
 bootPage();
 </script>
