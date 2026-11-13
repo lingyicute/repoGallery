@@ -323,6 +323,8 @@ async function main() {
       assert.match(await offline.page.locator('#srcChip').innerText(), /快照/);
       // The always-animating ambient blobs, including the pseudo-elements that draw them, must stay free of per-frame filters.
       assert.deepEqual(await offline.page.locator('.blob').evaluateAll(els => els.flatMap(el => [getComputedStyle(el).filter, getComputedStyle(el, '::before').filter])), Array(6).fill('none'));
+      // Applying the dynamic theme at startup must not start a page-wide colour transition.
+      assert.equal(await offline.page.evaluate(() => getComputedStyle(document.body).transitionDuration), '0s');
       assert.deepEqual(offline.errors, []);
     }
     await offline.context.close();
