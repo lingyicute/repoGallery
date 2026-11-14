@@ -205,8 +205,9 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 .legend .dot{width:10px;height:10px;border-radius:999px;flex-shrink:0}
 .legend .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;color:var(--md-on-surface)}
 .bar-track{margin-left:auto;width:56px;height:6px;border-radius:999px;overflow:hidden;background:var(--md-surface-container-highest)}
-.bar-fill{display:block;width:0;height:100%;border-radius:999px;transition:width .9s var(--e) var(--d,0ms)}
-.in .bar-fill{width:var(--w)}
+/* 宽度静态给定,入场改用 translateX 滑入,避免 5 条进度条在首屏入场期间逐帧触发布局计算 */
+.bar-fill{display:block;width:var(--w);height:100%;border-radius:999px;transform:translateX(-100%);transition:transform .9s var(--e) var(--d,0ms)}
+.in .bar-fill{transform:none}
 .legend .pct{width:36px;text-align:right;font-size:10px;color:var(--md-on-surface-variant)}
 .donut .seg-circle{stroke-dashoffset:var(--off);transition:stroke-dashoffset 1s var(--e) var(--d,0ms)}
 .donut.in .seg-circle{stroke-dashoffset:0}
