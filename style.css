@@ -115,8 +115,10 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 .chip:hover{translate:0 -2px}
 
 /* ——— 顶栏 ——— */
-.topbar{position:fixed;inset:0 0 auto 0;z-index:50;transition:background-color .4s}
-.topbar.scrolled{backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+/* 滚动后改用高透明底色加细底边,不做 backdrop-filter:blur(20px):
+   滚动内容与后方漂移光斑会让合成器每帧回读并重算全宽高斯模糊。 */
+.topbar{position:fixed;inset:0 0 auto 0;z-index:50;transition:background-color .4s,box-shadow .4s}
+.topbar.scrolled{background-color:color-mix(in srgb,var(--md-surface) 92%,transparent);box-shadow:inset 0 -1px 0 color-mix(in srgb,var(--md-outline-variant) 45%,transparent)}
 .topbar-in{display:flex;align-items:center;gap:8px;height:64px}
 .brand{display:flex;align-items:center;gap:12px;padding:6px 16px 6px 6px;border-radius:999px}
 .brand img{width:36px;height:36px;border-radius:14px}
