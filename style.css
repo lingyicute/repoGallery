@@ -196,7 +196,7 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 .tile{display:flex;flex-direction:column;gap:16px;border-radius:26px;padding:20px;cursor:default;transition:translate .32s var(--e),rotate .32s var(--e),background-color .35s var(--e),color .35s var(--e)}
 .tile:hover{translate:0 -6px;rotate:var(--rot,0deg)}
 .tile-ic{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:16px;background:color-mix(in srgb,currentColor 12%,transparent)}
-.tile-num{display:block;font-size:1.7rem;font-weight:800;line-height:1;letter-spacing:-.02em}
+.tile-num{display:block;font-size:1.7rem;font-weight:800;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .tile-label{display:block;margin-top:6px;font-size:12px;font-weight:700;opacity:.75}
 
 /* 甜甜圈 */
