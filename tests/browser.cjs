@@ -287,6 +287,8 @@ async function checkRefresh(browser, base) {
     return morph && !props.some(p => p.includes('Radius')) && !img.classList.contains('avatar-blob') &&
       getComputedStyle(bar).transitionProperty === 'transform' && bodyProp === 'background-color';
   }));
+  // With motion allowed the segmented-control indicator slides between options.
+  assert((await page.evaluate(() => getComputedStyle(document.querySelector('#segSort .seg-pill')).transitionProperty)).includes('translate'));
   // Counting stat numbers use tabular figures so the tiles do not jitter while they animate.
   assert((await page.evaluate(() => getComputedStyle(document.querySelector('#hero .tile-num')).fontVariantNumeric)).includes('tabular-nums'));
   // Looping decorations only run while their section is on screen.
@@ -354,6 +356,8 @@ async function main() {
       assert.match(await offline.page.locator('#srcChip').innerText(), /快照/);
       // The always-animating ambient blobs, including the pseudo-elements that draw them, must stay free of per-frame filters.
       assert.deepEqual(await offline.page.locator('.blob').evaluateAll(els => els.flatMap(el => [getComputedStyle(el).filter, getComputedStyle(el, '::before').filter])), Array(6).fill('none'));
+      // prefers-reduced-motion: the segmented-control indicator jumps instead of sliding.
+      assert.equal(await offline.page.evaluate(() => getComputedStyle(document.querySelector('#segSort .seg-pill')).transitionProperty), 'none');
       // Applying the dynamic theme at startup must not start a page-wide colour transition.
       assert.equal(await offline.page.evaluate(() => getComputedStyle(document.body).transitionDuration), '0s');
       assert.deepEqual(offline.errors, []);

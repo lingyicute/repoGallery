@@ -409,6 +409,7 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 /* ——— 减少动态效果 ——— */
 @media (prefers-reduced-motion:reduce){
   .blob,.marquee,.avatar-blob,.avatar-ring,.floaty,.bob,.ping-dot::before,.page-loader-spinner{animation:none!important}
+  .seg-pill{transition:none!important}
   .rv,.rv-lite,.ch,.bar-fill{transition:none!important;opacity:1!important;translate:none!important;rotate:none!important;transform:none!important;filter:none!important}
   .rv-lite{content-visibility:visible}
   .pop,.pop-avatar,.icon-pop,.popover,.snack{animation-duration:.01ms!important;animation-delay:0s!important}
