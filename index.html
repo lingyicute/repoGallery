@@ -2551,25 +2551,34 @@ const io = new IntersectionObserver(entries => {
   for (const e of shown) { e.target.classList.add('in'); io.unobserve(e.target); }
 }, { threshold: 0.05, rootMargin: '0px 0px -4% 0px' });
 function attachReveals(root) {
-  $$('.rv:not(.in), .rv-lite:not(.in), .donut:not(.in), .count:not(.done)', root).forEach(el => io.observe(el));
+  $$('.rv:not(.in), .rv-lite:not(.in), .donut:not(.in)', root).forEach(el => io.observe(el));
 }
 /* 工具栏是静态骨架，不会经过动态渲染；启动时也要注册揭示观察器 */
 attachReveals(document);
+const activeCounts = [];
+let countFrame = 0;
+function tickCounts(t) {
+  countFrame = 0;
+  for (let i = activeCounts.length - 1; i >= 0; i--) {
+    const c = activeCounts[i];
+    if (!c.el.isConnected) { activeCounts.splice(i, 1); continue; }
+    const p = Math.min(1, (t - c.t0) / 950), v = Math.round(c.to * (1 - Math.pow(1 - p, 4)));
+    if (v !== c.last) { c.last = v; c.el.textContent = v.toLocaleString('en-US'); }
+    if (p >= 1) activeCounts.splice(i, 1);
+  }
+  if (activeCounts.length) countFrame = requestAnimationFrame(tickCounts);
+}
 const countIO = new IntersectionObserver(entries => {
+  const t0 = performance.now();
   for (const e of entries) {
     if (!e.isIntersecting) continue;
     countIO.unobserve(e.target);
     const el = e.target, to = +el.dataset.to || 0;
     el.classList.add('done');
     if (REDUCED || !to) { el.textContent = to.toLocaleString('en-US'); continue; }
-    const t0 = performance.now(), dur = 950;
-    const tick = t => {
-      const p = Math.min(1, (t - t0) / dur), ease = 1 - Math.pow(1 - p, 4);
-      el.textContent = Math.round(to * ease).toLocaleString('en-US');
-      if (p < 1 && el.isConnected) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
+    activeCounts.push({ el: el, to: to, t0: t0, last: 0 });
   }
+  if (activeCounts.length && !countFrame) countFrame = requestAnimationFrame(tickCounts);
 }, { threshold: 0.3 });
 function attachCounts(root) { $$('.count', root).forEach(el => countIO.observe(el)); }
 function detachObservers(root) {
