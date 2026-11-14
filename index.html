@@ -2639,8 +2639,46 @@ function computeStats() {
   STATS = { stars: stars, forks: forks, forksN: forksN, sourceN: sourceN, langs: langs };
 }
 
-// 每次数据更新只构造一次搜索文本和稳定排序；筛选时复用节点。
-// 数据刷新时按仓库 id 复用卡片：内容未变的节点原样保留，只新建、改写或移除有差异的卡片。
+// 每次数据更新按需计算排序，数据刷新时先比对字段再生成卡片标记，内容未变的节点零成本复用。
+const nameCollator = new Intl.Collator();
+function timeAgoMs(date, now) {
+  if (!date) return '时间未知';
+  const s = Math.max(0, (now - date) / 1000);
+  if (s < 90) return '刚刚';
+  const m = Math.floor(s / 60);
+  if (m < 60) return m + ' 分钟前';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + ' 小时前';
+  const d = Math.floor(h / 24);
+  if (d === 1) return '昨天';
+  if (d < 30) return d + ' 天前';
+  const mo = Math.floor(d / 30);
+  if (mo < 12) return mo + ' 个月前';
+  return Math.floor(mo / 12) + ' 年前';
+}
+function sameCard(prev, r, ago) {
+  if (prev.ago !== ago) return false;
+  const x = prev.repo;
+  return x.name === r.name && x.full_name === r.full_name &&
+    (x.html_url === r.html_url || repoURL(x) === repoURL(r)) &&
+    (x.description || null) === (r.description || null) &&
+    x.fork === r.fork && x.archived === r.archived &&
+    (x.language || null) === (r.language || null) && x.stars === r.stars && x.forks === r.forks &&
+    (x.homepage === r.homepage || safeHttpURL(x.homepage, true) === safeHttpURL(r.homepage, true)) &&
+    (x.license || null) === (r.license || null) &&
+    x.topics.length === r.topics.length && x.topics.every((t, i) => t === r.topics[i]);
+}
+function sortedEntries(key) {
+  let list = gridIndex.sorted[key];
+  if (list) return list;
+  const e = gridIndex.entries;
+  if (key === 'pushed') list = e.slice().sort((a, b) => b.pushed - a.pushed);
+  else if (key === 'stars') list = e.slice().sort((a, b) => b.repo.stars - a.repo.stars);
+  else if (key === 'created') list = e.slice().sort((a, b) => b.created - a.created);
+  else list = e.slice().sort((a, b) => nameCollator.compare(a.repo.name, b.repo.name));
+  gridIndex.sorted[key] = list;
+  return list;
+}
 let gridIndex = null;
 function prepareGrid() {
   if (gridIndex && gridIndex.data === DATA) return;
@@ -2650,40 +2688,49 @@ function prepareGrid() {
     stale.add(entry);
     if (!old.has(entry.repo.id)) old.set(entry.repo.id, entry);
   }
+  const now = Date.now();
   const entries = DATA.repos.map(r => {
-    const prev = old.get(r.id), html = cardHTML(r);
+    const prev = old.get(r.id);
+    const pushed = dateValue(r.pushed_at);
+    const ago = timeAgoMs(pushed, now);
+    if (prev && sameCard(prev, r, ago)) {
+      old.delete(r.id); stale.delete(prev);
+      return {
+        repo: r, ago: ago, html: null, node: prev.node, search: prev.search,
+        pushed: pushed, created: prev.repo.created_at === r.created_at ? prev.created : dateValue(r.created_at)
+      };
+    }
+    const html = cardHTML(r, ago);
     const entry = {
-      repo: r, html: html, node: prev ? prev.node : null,
+      repo: r, ago: ago, html: html, node: prev ? prev.node : null,
       search: (r.name + ' ' + (r.description || '') + ' ' + r.topics.join(' ')).toLowerCase(),
-      pushed: dateValue(r.pushed_at), created: dateValue(r.created_at)
+      pushed: pushed, created: dateValue(r.created_at)
     };
     if (!prev) fresh.push(entry);
     else {
       old.delete(r.id); stale.delete(prev);
-      if (prev.html !== html) prev.node.innerHTML = html;
+      prev.node.innerHTML = html;
+      entry.html = null;
     }
     return entry;
   });
   for (const entry of stale) { io.unobserve(entry.node); entry.node.remove(); }
   const empty = gridIndex ? gridIndex.empty : null;
+  gridIndex = { data: DATA, entries: entries, sorted: {}, order: null, empty: empty };
   if (fresh.length) {
+    const allFresh = fresh.length === entries.length;
+    const toInsert = allFresh ? sortedEntries(sortKey) : fresh;
     const frag = document.createRange().createContextualFragment(
-      fresh.map(entry => '<div class="rv-lite">' + entry.html + '</div>').join(''));
-    Array.from(frag.children).forEach((node, i) => { fresh[i].node = node; });
+      toInsert.map(entry => '<div class="rv-lite">' + entry.html + '</div>').join(''));
+    Array.from(frag.children).forEach((node, i) => { toInsert[i].node = node; toInsert[i].html = null; });
     grid.insertBefore(frag, empty);
-    for (const entry of fresh) io.observe(entry.node);
+    for (const entry of toInsert) io.observe(entry.node);
+    if (allFresh) gridIndex.order = sortKey;
   }
-  const sorted = {
-    pushed: entries.slice().sort((a, b) => b.pushed - a.pushed),
-    stars: entries.slice().sort((a, b) => b.repo.stars - a.repo.stars),
-    created: entries.slice().sort((a, b) => b.created - a.created),
-    name: entries.slice().sort((a, b) => a.repo.name.localeCompare(b.repo.name))
-  };
-  gridIndex = { data: DATA, entries: entries, sorted: sorted, order: null, empty: empty };
 }
 function filtered() {
   const q = query.trim().toLowerCase();
-  return gridIndex.sorted[sortKey].filter(entry => {
+  return sortedEntries(sortKey).filter(entry => {
     const r = entry.repo;
     if (typeKey === 'source' && r.fork !== false) return false;
     if (typeKey === 'fork' && r.fork !== true) return false;
@@ -2774,13 +2821,24 @@ function renderHero() {
 }
 
 function renderTicker() {
-  const items = DATA.repos.slice().sort((a, b) => dateValue(b.pushed_at) - dateValue(a.pushed_at)).slice(0, 10);
+  const top = [];
+  for (const r of DATA.repos) {
+    const ts = dateValue(r.pushed_at);
+    if (top.length < 10 || ts > top[top.length - 1].ts) {
+      let i = top.length;
+      while (i > 0 && ts > top[i - 1].ts) i--;
+      top.splice(i, 0, { r: r, ts: ts });
+      if (top.length > 10) top.pop();
+    }
+  }
   const t = $('#ticker');
-  if (!items.length) { t.hidden = true; swapHTML(t, ''); return; }
+  if (!top.length) { t.hidden = true; swapHTML(t, ''); return; }
+  const now = Date.now();
   let track = '<span style="width:160px;flex-shrink:0" aria-hidden="true"></span>';
-  for (const r of items) {
+  for (const item of top) {
+    const r = item.r;
     track += '<a class="tick-item" href="' + esc(repoURL(r)) + '" target="_blank" rel="noopener noreferrer">' +
-      '<span class="dot"></span><b>' + esc(r.name) + '</b><span>' + timeAgoZh(r.pushed_at) + '更新</span></a>';
+      '<span class="dot"></span><b>' + esc(r.name) + '</b><span>' + timeAgoMs(item.ts, now) + '更新</span></a>';
   }
   swapHTML(t,
     '<span class="tick-badge pri-c m3-shadow-1"><span class="ping-dot"></span>' + ic('megaphone', 14) + ' 更新公告</span>' +
@@ -2794,11 +2852,12 @@ function renderSpotlight() {
   const pool = pool0.length ? pool0 : DATA.repos.slice();
   if (!pool.length) { s.hidden = true; swapHTML(s, ''); return; }
   const r = pool.reduce((b, x) => (x.stars > b.stars ? x : b), pool[0]);
+  const url = repoURL(r);
   const changed = swapHTML(s,
     '<div class="rv"><div class="spot pri-c lift">' +
     '<span class="spot-deco">' + ic('star', 260, true) + '</span><span class="spot-wm mono">01</span>' +
     '<div style="position:relative"><span class="spot-chip">' + ic('trophy', 14) + ' 最受欢迎（Maybe?）</span>' +
-    '<a class="spot-title" href="' + esc(repoURL(r)) + '" target="_blank" rel="noopener noreferrer"><h3>' + esc(r.name) + '<span class="ic">' + ic('out', 24) + '</span></h3></a>' +
+    '<a class="spot-title" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer"><h3>' + esc(r.name) + '<span class="ic">' + ic('out', 24) + '</span></h3></a>' +
     (r.description ? '<p class="spot-desc">' + esc(r.description) + '</p>' : '') +
     '<div class="spot-meta">' +
     (r.language ? '<span><span class="dot" style="width:10px;height:10px;border-radius:999px;background:' + langColor(r.language) + ';display:inline-block"></span> ' + esc(r.language) + '</span>' : '') +
@@ -2806,8 +2865,8 @@ function renderSpotlight() {
     '<span>' + ic('fork', 14) + ' ' + r.forks + ' Forks</span>' +
     '<span class="dim">更新于 ' + timeAgoZh(r.pushed_at) + '</span></div>' +
     '<div class="spot-actions">' +
-    '<a class="btn pri state lift m3-shadow-1" style="height:48px" href="' + esc(repoURL(r)) + '" target="_blank" rel="noopener noreferrer">打开项目 ' + ic('out', 16) + '</a>' +
-    '<button class="btn btn-ghost lift" style="height:48px" data-copy="' + esc(repoURL(r)) + '.git">' + ic('copy', 16) + ' 复制克隆地址</button>' +
+    '<a class="btn pri state lift m3-shadow-1" style="height:48px" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">打开项目 ' + ic('out', 16) + '</a>' +
+    '<button class="btn btn-ghost lift" style="height:48px" data-copy="' + esc(url) + '.git">' + ic('copy', 16) + ' 复制克隆地址</button>' +
     '</div></div></div></div>');
   s.hidden = false;
   if (changed) attachReveals(s);
@@ -2833,6 +2892,7 @@ function segHints(k) {
   return [null, null, null, null];
 }
 function renderSegs() {
+  let dirty = false;
   [['type', '#segType', typeKey], ['sort', '#segSort', sortKey]].forEach(cfg => {
     const key = cfg[0], el = $(cfg[1]), cur = cfg[2], hints = segHints(key);
     let html = '<span class="seg-pill" aria-hidden="true" style="opacity:0"></span>';
@@ -2841,14 +2901,17 @@ function renderSegs() {
         (hints[i] !== null ? '<span class="hint">' + hints[i] + '</span>' : '') + '</span></button>';
     });
     // 按钮只在计数变化时重建；切换选中项时原地更新，指示器得以从旧位置滑到新位置。
-    swapHTML(el, html);
+    if (swapHTML(el, html)) dirty = true;
     for (const b of el.querySelectorAll('button')) {
       const on = b.dataset.v === cur;
-      b.setAttribute('aria-pressed', on);
-      b.toggleAttribute('data-active', on);
+      if (b.hasAttribute('data-active') !== on) {
+        b.setAttribute('aria-pressed', on);
+        b.toggleAttribute('data-active', on);
+        dirty = true;
+      }
     }
   });
-  schedulePills();
+  if (dirty) schedulePills();
 }
 // 事件委托：控件重建或更新后无需逐个重新绑定监听器。
 [['#segType', v => { typeKey = v; }], ['#segSort', v => { sortKey = v; }]].forEach(cfg => {
@@ -2869,12 +2932,12 @@ function placePills() {
   // 先统一读取，再统一写入，避免两个分段控件之间反复强制布局。
   const sizes = $$('.seg').map(seg => {
     const pill = $('.seg-pill', seg), btn = seg.querySelector('[data-active]');
-    return pill && btn ? { pill: pill, width: btn.offsetWidth, left: btn.offsetLeft } : null;
+    return pill && btn ? { pill: pill, width: btn.offsetWidth + 'px', left: btn.offsetLeft + 'px 0' } : null;
   }).filter(Boolean);
   sizes.forEach(({ pill, width, left }) => {
-    pill.style.width = width + 'px';
-    pill.style.translate = left + 'px 0';
-    pill.style.opacity = '1';
+    if (pill.style.width !== width) pill.style.width = width;
+    if (pill.style.translate !== left) pill.style.translate = left;
+    if (pill.style.opacity !== '1') pill.style.opacity = '1';
   });
 }
 
@@ -2901,7 +2964,8 @@ $('#langChips').addEventListener('click', e => {
   renderGrid();
 });
 
-function cardHTML(r) {
+function cardHTML(r, ago) {
+  const url = repoURL(r);
   const homepage = safeHttpURL(r.homepage, true);
   let badges = '';
   if (r.fork === null) badges += '<span class="badge dim">类型未知</span>';
@@ -2911,7 +2975,7 @@ function cardHTML(r) {
   let topics = '';
   r.topics.slice(0, 3).forEach(t => { topics += '<span class="topic">' + esc(t) + '</span>'; });
   if (r.topics.length > 3) topics += '<span class="topic-more">+' + (r.topics.length - 3) + '</span>';
-  return '<article class="card" tabindex="0" role="link" data-url="' + esc(repoURL(r)) + '" aria-label="打开仓库 ' + esc(r.full_name) + '">' +
+  return '<article class="card" tabindex="0" role="link" data-url="' + esc(url) + '" aria-label="打开仓库 ' + esc(r.full_name) + '">' +
     '<span class="card-go">' + ic('out', 20) + '</span>' +
     '<div class="card-head"><span class="card-ic ' + (r.fork ? 'fork' : 'sec-c') + '">' + ic(r.fork ? 'fork' : 'book', 18) + '</span>' +
     '<h3 class="card-name">' + esc(r.name) + '</h3></div>' +
@@ -2922,25 +2986,33 @@ function cardHTML(r) {
     (r.language ? '<b><span class="dot" style="background:' + langColor(r.language) + '"></span> ' + esc(r.language) + '</b>' : '') +
     (r.stars > 0 ? '<span>' + ic('star', 14) + ' ' + r.stars + '</span>' : '') +
     (r.forks > 0 ? '<span>' + ic('fork', 14) + ' ' + r.forks + '</span>' : '') +
-    '<span>' + ic('clock', 14) + ' ' + timeAgoZh(r.pushed_at) + '</span>' +
+    '<span>' + ic('clock', 14) + ' ' + (ago || timeAgoZh(r.pushed_at)) + '</span>' +
     '<span class="card-actions">' +
     (homepage ? '<a class="ico-btn state" href="' + esc(homepage) + '" target="_blank" rel="noopener noreferrer" aria-label="打开项目主页">' + ic('globe', 16) + '</a>' : '') +
-    '<button class="ico-btn state" data-copy="' + esc(repoURL(r)) + '.git" aria-label="复制克隆地址">' + ic('copy', 16) + '</button>' +
+    '<button class="ico-btn state" data-copy="' + esc(url) + '.git" aria-label="复制克隆地址">' + ic('copy', 16) + '</button>' +
     '</span></div></article>';
 }
 
+let lastCountKey = '', lastResetHidden = null;
 function renderGrid() {
   prepareGrid();
-  const list = filtered(), grid = $('#grid'), visible = new Set(list);
-  for (const entry of gridIndex.entries) {
-    const hidden = !visible.has(entry);
+  const q = query.trim().toLowerCase(), grid = $('#grid'), sorted = sortedEntries(sortKey);
+  let shown = 0;
+  for (const entry of sorted) {
+    const r = entry.repo;
+    const match = !(typeKey === 'source' && r.fork !== false) &&
+      !(typeKey === 'fork' && r.fork !== true) &&
+      (!langKey || r.language === langKey) &&
+      (!q || entry.search.includes(q));
+    if (match) shown++;
+    const hidden = !match;
     if (entry.node.hidden !== hidden) entry.node.hidden = hidden;
   }
   // 仅在排序变化时移动节点，不读取布局；隐藏节点仍保持正确的排序。
   if (gridIndex.order !== sortKey) {
     const active = document.activeElement;
     let cursor = grid.firstElementChild;
-    for (const entry of gridIndex.sorted[sortKey]) {
+    for (const entry of sorted) {
       if (entry.node === cursor) cursor = cursor.nextElementSibling;
       else grid.insertBefore(entry.node, cursor);
     }
@@ -2949,19 +3021,34 @@ function renderGrid() {
       active.focus({ preventScroll: true });
     }
   }
-  if (!list.length && !gridIndex.empty) {
+  if (!shown && !gridIndex.empty) {
     grid.insertAdjacentHTML('beforeend', '<div class="empty c-low pop" style="grid-column:1/-1">' +
       '<span class="empty-ic sec-c">' + ic('searchx', 36) + '</span>' +
       '<div><h4>没有找到匹配的仓库</h4><p>换个关键词,或者清除全部筛选条件试试。</p></div>' +
       '<button class="btn pri state lift m3-shadow-1" data-act="reset" style="height:44px">清除筛选</button></div>');
     gridIndex.empty = grid.lastElementChild;
   }
-  if (gridIndex.empty) gridIndex.empty.hidden = list.length !== 0;
-  $('#countLine').innerHTML = '显示 <b>' + list.length + '</b> / ' + DATA.repos.length + ' 个仓库';
-  $('#resetBtn').hidden = !isFiltered();
+  if (gridIndex.empty) {
+    const hideEmpty = shown !== 0;
+    if (gridIndex.empty.hidden !== hideEmpty) gridIndex.empty.hidden = hideEmpty;
+  }
+  const countKey = shown + '/' + DATA.repos.length;
+  if (countKey !== lastCountKey) {
+    lastCountKey = countKey;
+    $('#countLine').innerHTML = '显示 <b>' + shown + '</b> / ' + DATA.repos.length + ' 个仓库';
+  }
+  const resetHidden = !isFiltered();
+  if (resetHidden !== lastResetHidden) {
+    lastResetHidden = resetHidden;
+    $('#resetBtn').hidden = resetHidden;
+  }
 }
 
+let lastSourceKey = '';
 function renderSourceChip() {
+  const key = DATA.source + ':' + DATA.repos.length;
+  if (key === lastSourceKey) return;
+  lastSourceKey = key;
   const m = { live: ['实时数据', 'ter-c', 'radio'], mirror: ['镜像 + 快照', 'sec-c', 'cloudoff'], snapshot: ['快照 11-14', 'err-c', 'database'] }[DATA.source];
   const c = $('#srcChip');
   c.className = 'src-chip ' + m[1];
