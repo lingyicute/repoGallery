@@ -2944,15 +2944,27 @@ function placePills() {
 function renderChips() {
   const el = $('#langChips');
   if (!STATS.langs.length) { swapHTML(el, ''); return; }
-  let html = '<button class="lg-chip chip ' + (langKey === null ? 'sec-c' : 'off state') + '" data-lang="" aria-pressed="' + (langKey === null) + '">' +
-    (langKey === null ? ic('check', 14) : '') + ' 全部语言</button>';
+  let html = '<button class="lg-chip chip off state" data-lang="" aria-pressed="false">全部语言</button>';
   STATS.langs.forEach(l => {
-    const on = langKey === l.name;
-    html += '<button class="lg-chip chip ' + (on ? 'sec-c' : 'off state') + '" data-lang="' + esc(l.name) + '" aria-pressed="' + on + '">' +
-      (on ? ic('check', 14) : '<span class="dot" style="background:' + l.color + '"></span>') + ' ' + esc(l.name) +
+    html += '<button class="lg-chip chip off state" data-lang="' + esc(l.name) + '" data-color="' + esc(l.color) + '" aria-pressed="false">' +
+      '<span class="dot" style="background:' + l.color + '"></span> ' + esc(l.name) +
       '<span class="n">' + l.count + '</span></button>';
   });
+  // 语言列表未变时原地更新选中态，避免点击筛选时重建全部按钮并丢失焦点。
   swapHTML(el, html);
+  for (const b of el.querySelectorAll('button')) {
+    const v = b.dataset.lang, on = v === '' ? langKey === null : langKey === v;
+    if ((b.getAttribute('aria-pressed') === 'true') === on) continue;
+    b.className = 'lg-chip chip ' + (on ? 'sec-c' : 'off state');
+    b.setAttribute('aria-pressed', String(on));
+    const mark = b.firstElementChild;
+    if (v === '') {
+      if (on) b.insertAdjacentHTML('afterbegin', ic('check', 14));
+      else if (mark) mark.remove();
+    } else if (mark) {
+      mark.outerHTML = on ? ic('check', 14) : '<span class="dot" style="background:' + b.dataset.color + '"></span>';
+    }
+  }
 }
 $('#langChips').addEventListener('click', e => {
   const b = e.target.closest('button[data-lang]');
@@ -2960,7 +2972,7 @@ $('#langChips').addEventListener('click', e => {
   const v = b.dataset.lang;
   langKey = v === '' || v === langKey ? null : v;
   renderChips();
-  $$('#langChips button').find(x => x.dataset.lang === v).focus({ preventScroll: true });
+  b.focus({ preventScroll: true });
   renderGrid();
 });
 
