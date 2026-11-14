@@ -2752,7 +2752,7 @@ function renderHero() {
     '<a class="btn btn-txt state lift" href="#repos">浏览仓库 <span class="bob">' + ic('down', 16) + '</span></a>' +
     '</div></div>' +
     '<div class="hero-right"><div class="avatar-wrap pop-avatar"><div class="avatar-ring"></div>' +
-    '<div class="avatar-blob avatar-box c-lowest m3-shadow-2"><img class="avatar-blob" src="' + esc(safeHttpURL(u.avatar_url) || USER.avatar_url) + '" alt="lingyicute 的头像" /></div>' +
+    '<div class="avatar-blob avatar-box c-lowest m3-shadow-2"><img src="' + esc(safeHttpURL(u.avatar_url) || USER.avatar_url) + '" alt="lingyicute 的头像" decoding="async" /></div>' +
     '<div class="float-chip floaty ter-c fc-star m3-shadow-1">' + ic('star', 14) + ' ' + STATS.stars + ' stars</div>' +
     '<div class="float-chip floaty sec-c fc-lang m3-shadow-1">' + ic('code', 14) + ' ' + (STATS.langs.length || '多') + ' 种语言</div>' +
     '</div><div class="tiles">' + tilesHTML + '</div></div></div>';

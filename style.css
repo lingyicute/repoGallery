@@ -169,9 +169,10 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 @keyframes spin-slower{to{transform:rotate(360deg)}}
 .avatar-box{position:relative;width:176px;height:176px;padding:6px}
 @media(min-width:640px){.avatar-box{width:208px;height:208px}}
-@keyframes blob-morph{0%,100%{border-radius:58% 42% 45% 55%/55% 48% 52% 45%}33%{border-radius:42% 58% 60% 40%/48% 40% 60% 52%}66%{border-radius:52% 48% 38% 62%/58% 55% 45% 42%}}
-.avatar-blob{animation:blob-morph 9s var(--e) infinite;overflow:hidden}
-.avatar-box img{width:100%;height:100%;object-fit:cover}
+/* 轮廓固定为有机圆角,形变动效改由合成器 transform 驱动,避免头像容器与图片每帧因 border-radius 触发主线程重绘与光栅化 */
+@keyframes blob-morph{0%,100%{transform:scale(1,1)}33%{transform:scale(1.035,.965) rotate(1.2deg)}66%{transform:scale(.965,1.035) rotate(-1.2deg)}}
+.avatar-blob{border-radius:58% 42% 45% 55%/55% 48% 52% 45%;animation:blob-morph 9s var(--e) infinite;overflow:hidden}
+.avatar-box img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
 @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .floaty{animation:floaty 5s ease-in-out infinite}
 .float-chip{position:absolute;display:flex;align-items:center;gap:6px;border-radius:16px;padding:8px 14px;font-size:12px;font-weight:700;white-space:nowrap}
