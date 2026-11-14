@@ -136,6 +136,11 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 
 /* ——— 进度条 ——— */
 .progress{position:fixed;top:0;left:0;right:0;height:3px;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,var(--md-primary),var(--md-tertiary));z-index:60;border-radius:0 99px 99px 0;will-change:transform}
+/* 支持滚动时间线时由合成器直接驱动进度条,滚动期间不再触发主线程样式写入 */
+@supports (animation-timeline:scroll()){
+  @keyframes scroll-progress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  .progress{animation:scroll-progress linear both;animation-timeline:scroll(root)}
+}
 
 /* ——— 氛围光斑 ——— */
 .blobs{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
