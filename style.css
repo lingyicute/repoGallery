@@ -62,13 +62,17 @@ input { font:inherit; }
 *::-webkit-scrollbar-track { background:transparent; }
 
 html.theme-anim *{transition:none!important}
-html.theme-anim body{transition:background-color .22s var(--e),color .22s var(--e)!important}
+/* 仅过渡 body 自身的底色,不过渡可继承的 color,避免 220ms 内逐帧重算整棵文档树样式并整屏重绘 */
+html.theme-anim body{transition:background-color .22s var(--e)!important}
 html.theme-anim .topbar{transition:background-color .22s var(--e)!important}
 html.theme-anim .blob,
 html.theme-anim .progress,
 html.theme-anim .snack,
 html.theme-anim .marquee,
 html.theme-anim .avatar-ring,
+html.theme-anim .avatar-blob,
+html.theme-anim .floaty,
+html.theme-anim .bob,
 html.theme-anim .ping-dot::before{transition:none!important;animation-play-state:paused!important}
 
 .c-lowest{background-color:var(--md-surface-container-lowest)}
