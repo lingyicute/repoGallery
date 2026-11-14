@@ -252,6 +252,15 @@ async function checkRefresh(browser, base) {
   });
   assert.deepEqual([cards.total, cards.wrappersLost, cards.articlesLost, cards.edited, cards.added], [0, 0, 0, 1, 1]);
   assert.deepEqual(cards.names, cards.expected);
+  // Re-sorting keeps keyboard focus on the focused card, with moveBefore or the insertBefore fallback.
+  assert(await page.evaluate(() => {
+    const card = document.querySelector('#grid > .rv-lite:not([hidden]) .card');
+    card.focus({ preventScroll: true });
+    document.querySelector('#segSort button[data-v="stars"]').click();
+    const kept = document.activeElement === card;
+    document.querySelector('#segSort button[data-v="pushed"]').click();
+    return kept && document.activeElement === card;
+  }), 'sorting must not drop focus from the focused card');
   // Switching a segment or language chip updates controls in place.
   assert(await page.evaluate(() => {
     const pill = document.querySelector('#segSort .seg-pill'), button = document.querySelector('#segSort button[data-v="name"]');

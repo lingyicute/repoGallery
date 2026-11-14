@@ -3023,10 +3023,12 @@ function renderGrid() {
   // 仅在排序变化时移动节点，不读取布局；隐藏节点仍保持正确的排序。
   if (gridIndex.order !== sortKey) {
     const active = document.activeElement;
+    // moveBefore（Chromium 133+）原地移动节点，不会销毁焦点、滚动位置与进行中的过渡；其他浏览器退回 insertBefore。
+    const move = typeof grid.moveBefore === 'function' ? 'moveBefore' : 'insertBefore';
     let cursor = grid.firstElementChild;
     for (const entry of sorted) {
       if (entry.node === cursor) cursor = cursor.nextElementSibling;
-      else grid.insertBefore(entry.node, cursor);
+      else grid[move](entry.node, cursor);
     }
     gridIndex.order = sortKey;
     if (active && active.isConnected && grid.contains(active) && !active.closest('[hidden]') && document.activeElement !== active) {
