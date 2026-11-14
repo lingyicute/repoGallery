@@ -3213,25 +3213,37 @@ $('#darkBtn').addEventListener('click', () => {
   renderDarkBtn();
 });
 
-/* 滚动:进度条 + 顶栏 + 回顶 FAB(单监听,rAF 节流) */
-let ticking = false;
+/* 滚动:进度条 + 顶栏 + 回顶 FAB(单监听,rAF 节流;支持 scroll-timeline 时由合成器直驱进度条) */
+const progressEl = $('#progress'), topbarEl = $('#topbar'), fabEl = $('#fabTop');
+const cssScrollProgress = typeof CSS !== 'undefined' && !!CSS.supports && CSS.supports('animation-timeline: scroll()');
+let ticking = false, maxScroll = 0, prevScrolled = null, prevShowFab = null, prevProgress = '';
+function syncScrollBounds() {
+  const h = document.documentElement;
+  maxScroll = Math.max(0, h.scrollHeight - h.clientHeight);
+}
+if (!cssScrollProgress) {
+  syncScrollBounds();
+  if (typeof ResizeObserver === 'function') new ResizeObserver(syncScrollBounds).observe(document.documentElement);
+  addEventListener('resize', () => { syncScrollBounds(); onScroll(); }, { passive: true });
+}
 function onScroll() {
   if (ticking) return;
   ticking = true;
   requestAnimationFrame(() => {
     ticking = false;
-    const h = document.documentElement, y = h.scrollTop;
-    const max = h.scrollHeight - h.clientHeight;
-    $('#progress').style.transform = 'scaleX(' + (max > 0 ? Math.min(1, y / max) : 0) + ')';
-    $('#topbar').classList.toggle('scrolled', y > 12);
-    const fab = $('#fabTop');
+    const y = window.scrollY;
+    if (!cssScrollProgress) {
+      const next = 'scaleX(' + (maxScroll > 0 ? Math.min(1, y / maxScroll) : 0) + ')';
+      if (next !== prevProgress) { prevProgress = next; progressEl.style.transform = next; }
+    }
+    const scrolled = y > 12;
+    if (scrolled !== prevScrolled) { prevScrolled = scrolled; topbarEl.classList.toggle('scrolled', scrolled); }
     const show = y > 640;
-    fab.classList.toggle('show', show);
-    fab.tabIndex = show ? 0 : -1;
+    if (show !== prevShowFab) { prevShowFab = show; fabEl.classList.toggle('show', show); fabEl.tabIndex = show ? 0 : -1; }
   });
 }
 addEventListener('scroll', onScroll, { passive: true });
-addEventListener('resize', onScroll, { passive: true });
+if (cssScrollProgress) addEventListener('resize', onScroll, { passive: true });
 $('#fabTop').innerHTML = ic('up', 24);
 $('#fabTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' }));
 addEventListener('resize', schedulePills, { passive: true });
