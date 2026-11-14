@@ -252,13 +252,31 @@ async function checkRefresh(browser, base) {
   });
   assert.deepEqual([cards.total, cards.wrappersLost, cards.articlesLost, cards.edited, cards.added], [0, 0, 0, 1, 1]);
   assert.deepEqual(cards.names, cards.expected);
-  // Switching a segment updates it in place so its indicator can slide.
+  // Switching a segment or language chip updates controls in place.
   assert(await page.evaluate(() => {
     const pill = document.querySelector('#segSort .seg-pill'), button = document.querySelector('#segSort button[data-v="name"]');
-    const chip = document.querySelector('#langChips button[data-lang=""]');
-    button.click(); chip.click();
-    return pill.isConnected && button.isConnected && chip.isConnected && button.hasAttribute('data-active') &&
-      button.getAttribute('aria-pressed') === 'true' && document.querySelectorAll('#segSort [data-active]').length === 1;
+    const allChip = document.querySelector('#langChips button[data-lang=""]');
+    const langChip = document.querySelector('#langChips button[data-lang]:not([data-lang=""])');
+    button.click(); langChip.click();
+    const ok = pill.isConnected && button.isConnected && allChip.isConnected && langChip.isConnected &&
+      button.hasAttribute('data-active') && button.getAttribute('aria-pressed') === 'true' &&
+      langChip.getAttribute('aria-pressed') === 'true' && allChip.getAttribute('aria-pressed') === 'false' &&
+      document.querySelectorAll('#segSort [data-active]').length === 1;
+    allChip.click();
+    return ok && allChip.isConnected && allChip.getAttribute('aria-pressed') === 'true';
+  }));
+  // Avatar morph and language bars stay on compositor properties; theme switch skips inherited body colour.
+  assert(await page.evaluate(() => {
+    const blob = document.querySelector('#hero .avatar-blob');
+    const img = document.querySelector('#hero .avatar-box img');
+    const bar = document.querySelector('#hero .bar-fill');
+    const morph = blob.getAnimations().find(a => a.animationName === 'blob-morph');
+    const props = morph ? morph.effect.getKeyframes().flatMap(k => Object.keys(k)) : [];
+    document.documentElement.classList.add('theme-anim');
+    const bodyProp = getComputedStyle(document.body).transitionProperty;
+    document.documentElement.classList.remove('theme-anim');
+    return morph && !props.some(p => p.includes('Radius')) && !img.classList.contains('avatar-blob') &&
+      getComputedStyle(bar).transitionProperty === 'transform' && bodyProp === 'background-color';
   }));
   // Looping decorations only run while their section is on screen.
   const playState = sel => page.evaluate(s => getComputedStyle(document.querySelector(s)).animationPlayState, sel);
@@ -266,6 +284,8 @@ async function checkRefresh(browser, base) {
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   const loops = ['#hero .avatar-blob', '#ticker .marquee'];
   await page.waitForFunction(list => list.every(s => getComputedStyle(document.querySelector(s)).animationPlayState === 'paused'), loops);
+  await page.waitForFunction(() => document.querySelector('#topbar').classList.contains('scrolled'));
+  assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('#topbar')).backdropFilter), 'none');
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForFunction(list => list.every(s => getComputedStyle(document.querySelector(s)).animationPlayState === 'running'), loops);
   assert.deepEqual(run.errors, []);
