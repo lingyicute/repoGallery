@@ -287,6 +287,8 @@ async function checkRefresh(browser, base) {
     return morph && !props.some(p => p.includes('Radius')) && !img.classList.contains('avatar-blob') &&
       getComputedStyle(bar).transitionProperty === 'transform' && bodyProp === 'background-color';
   }));
+  // Counting stat numbers use tabular figures so the tiles do not jitter while they animate.
+  assert((await page.evaluate(() => getComputedStyle(document.querySelector('#hero .tile-num')).fontVariantNumeric)).includes('tabular-nums'));
   // Looping decorations only run while their section is on screen.
   const playState = sel => page.evaluate(s => getComputedStyle(document.querySelector(s)).animationPlayState, sel);
   assert.equal(await playState('#hero .avatar-blob'), 'running');
