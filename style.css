@@ -376,9 +376,9 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 /* 只过渡 opacity 与 translate,二者全程由合成器驱动。入场若再叠加 filter:blur(),
    工具栏面板、精选卡这类大块图层在 0.75s 内每帧都要多跑一遍高斯模糊,结束时还要再提交一次图层变更。 */
 .rv{opacity:0;translate:0 26px;transition:opacity .75s var(--e) var(--d,0ms),translate .75s var(--e) var(--d,0ms)}
-.rv.in{opacity:1;translate:0 0}
+.rv.in{opacity:1;translate:none}
 .rv-lite{opacity:0;translate:0 22px;content-visibility:auto;contain-intrinsic-size:auto 200px;transition:opacity .6s var(--e) var(--d,0ms),translate .6s var(--e) var(--d,0ms)}
-.rv-lite.in{opacity:1;translate:0 0}
+.rv-lite.in{opacity:1;translate:none}
 .rv-mask{display:inline-flex;overflow:hidden;padding-block:.06em .12em;margin-block:-.06em -.12em}
 /* 用 transform 而非独立 translate/rotate 属性做逐字揭示,且终态必须为 none:
    WebKit 下 .ch 只要带非 none 的 translate/rotate/transform,祖先
@@ -398,13 +398,18 @@ html.theme-anim .ping-dot::before{transition:none!important;animation-play-state
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{animation:spin .8s linear infinite}
 
-/* 离屏区块暂停循环动画(.loops-off 由 JS 的 IntersectionObserver 切换) */
-.loops-off *,.loops-off *::before{animation-play-state:paused!important}
+/* 离屏区块暂停循环动画(.loops-off 由 JS 的 IntersectionObserver 切换;只命中实际循环节点,避免通配符扫描) */
+.loops-off .avatar-ring,
+.loops-off .avatar-blob,
+.loops-off .floaty,
+.loops-off .bob,
+.loops-off .marquee,
+.loops-off .ping-dot::before{animation-play-state:paused!important}
 
 /* ——— 减少动态效果 ——— */
 @media (prefers-reduced-motion:reduce){
-  .blob,.marquee,.avatar-blob,.avatar-ring,.floaty,.bob,.page-loader-spinner{animation:none!important}
-  .rv,.rv-lite,.ch{transition:none!important;opacity:1!important;translate:none!important;rotate:none!important;transform:none!important;filter:none!important}
+  .blob,.marquee,.avatar-blob,.avatar-ring,.floaty,.bob,.ping-dot::before,.page-loader-spinner{animation:none!important}
+  .rv,.rv-lite,.ch,.bar-fill{transition:none!important;opacity:1!important;translate:none!important;rotate:none!important;transform:none!important;filter:none!important}
   .rv-lite{content-visibility:visible}
   .pop,.pop-avatar,.icon-pop,.popover,.snack{animation-duration:.01ms!important;animation-delay:0s!important}
   html{scroll-behavior:auto}
