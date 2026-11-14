@@ -2521,8 +2521,11 @@ let dark = (() => { const v = readLS(LS_DARK); if (v !== null) return v === '1';
 const savedSeed = readLS(LS_SEED);
 let themeChosen = /^#[0-9a-f]{6}$/i.test(savedSeed || '');
 let seed = themeChosen ? savedSeed : DEFAULT_SEED;
-let animTimer = 0;
+let animTimer = 0, appliedTheme = '';
 function applyThemeAnim(animate) {
+  const key = seed.toLowerCase() + ':' + (dark ? 1 : 0);
+  if (key === appliedTheme) return;
+  appliedTheme = key;
   if (animate && !REDUCED) {
     document.documentElement.classList.add('theme-anim');
     applyTheme(seed, dark);
@@ -2534,7 +2537,7 @@ function applyThemeAnim(animate) {
 }
 function persistTheme() { themeChosen = true; writeLS(LS_DARK, dark ? '1' : '0'); writeLS(LS_SEED, seed); }
 /* 首帧前应用主题,杜绝闪烁 */
-applyTheme(seed, dark);
+applyThemeAnim(false);
 
 /* ================================================================
    7 · 揭示系统(共享 IntersectionObserver)与计数器
