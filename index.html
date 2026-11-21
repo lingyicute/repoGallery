@@ -405,7 +405,7 @@ function seedFromImage(url, timeoutMs = 3000) {
 /* ================================================================
    4 · 内置快照(GitHub 数据兜底)
 ================================================================ */
-/* 2026-11-21 更新 */
+/* 2026-11-22 更新 */
 const USER = {
   "login": "lingyicute",
   "avatar_url": "https://avatars.githubusercontent.com/u/160479206?v=4",
@@ -420,7 +420,7 @@ const SNAP = [
     "id": 1381061146,
     "name": "worker-cron",
     "description": "My cron job infrastructure",
-    "pushed_at": "2026-11-20T22:14:42Z",
+    "pushed_at": "2026-11-21T21:14:06Z",
     "created_at": "2026-09-22T07:38:56Z",
     "stars": 3,
     "forks": 0,
@@ -432,10 +432,25 @@ const SNAP = [
     "license": "AGPL-3.0"
   },
   {
+    "id": 1366217646,
+    "name": "MusicDatabase",
+    "description": "QQ & Netease Music Archive",
+    "pushed_at": "2026-11-21T13:06:40Z",
+    "created_at": "2026-09-11T13:53:15Z",
+    "stars": 5,
+    "forks": 1,
+    "fork": false,
+    "archived": false,
+    "language": "Python",
+    "topics": [],
+    "homepage": "",
+    "license": null
+  },
+  {
     "id": 929393365,
     "name": "repoPackage",
     "description": "A collection of all my open-source repositories, used for mirror backups.",
-    "pushed_at": "2026-11-20T16:14:31Z",
+    "pushed_at": "2026-11-21T07:57:04Z",
     "created_at": "2025-02-08T12:54:19Z",
     "stars": 14,
     "forks": 0,
@@ -450,7 +465,7 @@ const SNAP = [
     "id": 868724660,
     "name": "lingyicute",
     "description": "Config files for my profile.",
-    "pushed_at": "2026-11-20T16:13:51Z",
+    "pushed_at": "2026-11-21T07:38:40Z",
     "created_at": "2024-10-07T04:24:36Z",
     "stars": 15,
     "forks": 0,
@@ -464,25 +479,10 @@ const SNAP = [
     "license": null
   },
   {
-    "id": 1366217646,
-    "name": "MusicDatabase",
-    "description": "QQ & Netease Music Archive",
-    "pushed_at": "2026-11-20T03:44:20Z",
-    "created_at": "2026-09-11T13:53:15Z",
-    "stars": 5,
-    "forks": 1,
-    "fork": false,
-    "archived": false,
-    "language": "Python",
-    "topics": [],
-    "homepage": "",
-    "license": null
-  },
-  {
     "id": 865971007,
     "name": "repoGallery",
     "description": "My Open Source Repo Gallery",
-    "pushed_at": "2026-11-19T22:49:02Z",
+    "pushed_at": "2026-11-20T22:25:51Z",
     "created_at": "2024-10-01T12:34:12Z",
     "stars": 13,
     "forks": 0,
@@ -3092,10 +3092,10 @@ function renderSourceChip() {
   const key = DATA.source + ':' + DATA.repos.length;
   if (key === lastSourceKey) return;
   lastSourceKey = key;
-  const m = { live: ['实时数据', 'ter-c', 'radio'], mirror: ['镜像 + 快照', 'sec-c', 'cloudoff'], snapshot: ['快照 11-21', 'err-c', 'database'] }[DATA.source];
+  const m = { live: ['实时数据', 'ter-c', 'radio'], mirror: ['镜像 + 快照', 'sec-c', 'cloudoff'], snapshot: ['快照 11-22', 'err-c', 'database'] }[DATA.source];
   const c = $('#srcChip');
   c.className = 'src-chip ' + m[1];
-  c.title = DATA.source === 'mirror' ? '镜像计数；用户资料和已知仓库元数据来自 2026-11-21 快照，新增仓库类型未知' : DATA.source === 'snapshot' ? '离线快照：2026-11-21，非实时数据' : 'GitHub API 数据';
+  c.title = DATA.source === 'mirror' ? '镜像计数；用户资料和已知仓库元数据来自 2026-11-22 快照，新增仓库类型未知' : DATA.source === 'snapshot' ? '离线快照：2026-11-22，非实时数据' : 'GitHub API 数据';
   c.innerHTML = ic(m[2], 14) + ' ' + m[0] + ' <span class="n">· ' + DATA.repos.length + '</span>';
 }
 
